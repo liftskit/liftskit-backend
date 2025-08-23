@@ -15,7 +15,8 @@ defmodule LiftskitBackend.Application do
       # Start a worker by calling: LiftskitBackend.Worker.start_link(arg)
       # {LiftskitBackend.Worker, arg},
       # Start to serve requests, typically the last entry
-      LiftskitBackendWeb.Endpoint
+      LiftskitBackendWeb.Endpoint,
+      LiftskitBackendWeb.Presence
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

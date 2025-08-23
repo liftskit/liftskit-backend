@@ -2,7 +2,6 @@ defmodule LiftskitBackendWeb.RoomController do
   use LiftskitBackendWeb, :controller
 
   alias LiftskitBackend.Rooms
-  alias LiftskitBackend.Rooms.Room
 
   action_fallback LiftskitBackendWeb.FallbackController
 
@@ -14,7 +13,7 @@ defmodule LiftskitBackendWeb.RoomController do
   def create(conn, params) do
     case Rooms.create_room(params) do
       {:ok, room} ->
-        Phoenix.PubSub.broadcast(LiftskitBackend.PubSub, "rooms", {:room_created, %{
+        Phoenix.PubSub.broadcast(LiftskitBackend.PubSub, "lobby:lobby", {:room_created, %{
           room_name: room.name,
           room_id: room.id
         }})
