@@ -54,5 +54,12 @@ defmodule LiftskitBackendWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+
+  # CORS configuration for React Native development
+  plug CORSPlug,
+    origin: ["http://localhost:8081", "http://localhost:3000", "http://192.168.1.215:8081", "http://192.168.1.215:3000"],
+    max_age: 86400,
+    credentials: false
+
   plug LiftskitBackendWeb.Router
 end

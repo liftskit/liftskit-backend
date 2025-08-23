@@ -2,7 +2,6 @@ defmodule LiftskitBackendWeb.MessageController do
   use LiftskitBackendWeb, :controller
 
   alias LiftskitBackend.Messages
-  alias LiftskitBackend.Messages.Message
 
   action_fallback LiftskitBackendWeb.FallbackController
 
@@ -22,17 +21,17 @@ defmodule LiftskitBackendWeb.MessageController do
   end
 
   def create(conn, params) do
-    # Authentication is handled by the plug
+    # Authentication is now handled by the plug
     case Messages.create_message(conn.assigns.current_scope, params) do
       {:ok, message} ->
-        broadcast_to_user(message, message.to_user.username)
-        broadcast_to_user(message, message.from_user.username)
+        broadcast_to_receiver(message)
+        broadcast_to_sender(message)
         conn
         |> put_status(:created)
         |> assign(:message, message)
         |> render(:show)
 
-        {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{error: "Validation failed", details: format_changeset_errors(changeset)})
@@ -40,23 +39,77 @@ defmodule LiftskitBackendWeb.MessageController do
   end
 
   def show(conn, %{"id" => id}) do
-    message = Messages.get_message!(conn.assigns.current_scope, id)
-    render(conn, :show, message: message)
+    # Authentication is now handled by the plug
+    case Messages.get_message(conn.assigns.current_scope, id) do
+      {:ok, message} ->
+        conn
+        |> assign(:message, message)
+        |> render(:show)
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Message not found"})
+
+      {:error, :forbidden} ->
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "Access denied to this message"})
+    end
   end
 
   def update(conn, %{"id" => id, "message" => message_params}) do
-    message = Messages.get_message!(conn.assigns.current_scope, id)
+    # Authentication is now handled by the plug
+    case Messages.get_message(conn.assigns.current_scope, id) do
+      {:ok, message} ->
+        case Messages.update_message(conn.assigns.current_scope, message, message_params) do
+          {:ok, message} ->
+            conn
+            |> assign(:message, message)
+            |> render(:show)
 
-    with {:ok, %Message{} = message} <- Messages.update_message(conn.assigns.current_scope, message, message_params) do
-      render(conn, :show, message: message)
+          {:error, %Ecto.Changeset{} = changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Validation failed", details: format_changeset_errors(changeset)})
+        end
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Message not found"})
+
+      {:error, :forbidden} ->
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "Access denied to this message"})
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    message = Messages.get_message!(conn.assigns.current_scope, id)
+    case Messages.get_message(conn.assigns.current_scope, id) do
+      {:ok, message} ->
+        case Messages.delete_message(conn.assigns.current_scope, message) do
+          {:ok, _message} ->
+            conn
+            |> put_status(:no_content)
+            |> send_resp(:no_content, "")
 
-    with {:ok, %Message{}} <- Messages.delete_message(conn.assigns.current_scope, message) do
-      send_resp(conn, :no_content, "")
+          {:error, _changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: "Failed to delete message"})
+        end
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Message not found"})
+
+      {:error, :forbidden} ->
+        conn
+        |> put_status(:forbidden)
+        |> json(%{error: "Access denied to this message"})
     end
   end
 
@@ -68,20 +121,35 @@ defmodule LiftskitBackendWeb.MessageController do
     end)
   end
 
-  defp broadcast_to_user(message, receiver_username) do
-      LiftskitBackendWeb.Endpoint.broadcast(
-        "user_messages:#{receiver_username}",
-        "message:received",
-        %{
-          id: message.id,
-          body: message.body,
-          created: message.inserted_at,
-          from_user_id: message.from_user_id,
-          to_user_id: message.to_user_id,
-          from_username: message.from_user.username,
-          to_username: message.to_user.username,
+  defp broadcast_to_receiver(message) do
+    LiftskitChatWeb.Endpoint.broadcast(
+      "user_messages:#{message.to_user.username}",
+      "message:received",
+      %{
+        id: message.id,
+        body: message.body,
+        created: message.inserted_at,
+        from_user_id: message.from_user_id,
+        to_user_id: message.to_user_id,
+        from_username: message.from_user.username,
+        to_username: message.to_user.username
+      }
+    )
+  end
 
-        }
-      )
+  defp broadcast_to_sender(message) do
+    LiftskitChatWeb.Endpoint.broadcast(
+      "user_messages:#{message.from_user.username}",
+      "message:received",
+      %{
+        id: message.id,
+        body: message.body,
+        created: message.inserted_at,
+        from_user_id: message.from_user_id,
+        to_user_id: message.to_user_id,
+        from_username: message.from_user.username,
+        to_username: message.to_user.username
+      }
+    )
   end
 end

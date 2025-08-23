@@ -1,4 +1,4 @@
-defmodule LiftskitBackendWeb.MessageChannel do
+defmodule LiftskitBackendWeb.MessagesChannel do
   use LiftskitBackendWeb, :channel
 
   @impl true
@@ -13,7 +13,7 @@ defmodule LiftskitBackendWeb.MessageChannel do
   @impl true
   def handle_in("message:send", %{"body" => body, "to" => to_user}, socket) do
     from_username = socket.assigns.current_user.username
-    topic = "user_message:#{to_user}"
+    topic = "user_messages:#{to_user}"
 
     broadcast(topic, "message:received", %{
       from: from_username,

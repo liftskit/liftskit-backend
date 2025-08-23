@@ -40,8 +40,8 @@ defmodule LiftskitBackendWeb.MessageJSON do
       body: message.body,
       created: message.created,
       from_user_id: message.from_user_id,
-      from_username: message.from_user.username,
       to_user_id: message.to_user_id,
+      from_username: message.from_user.username,
       to_username: message.to_user.username
     }
   end
