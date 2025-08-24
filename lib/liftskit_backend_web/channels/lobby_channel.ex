@@ -15,7 +15,7 @@ defmodule LiftskitBackendWeb.LobbyChannel do
   end
 
   @impl true
-  def terminate(_reason, socket) do
+  def terminate(_reason, _socket) do
     # Unsubscribe from PubSub when channel terminates
     Phoenix.PubSub.unsubscribe(LiftskitBackend.PubSub, "lobby:lobby")
     :ok

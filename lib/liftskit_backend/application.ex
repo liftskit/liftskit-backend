@@ -32,4 +32,10 @@ defmodule LiftskitBackend.Application do
     LiftskitBackendWeb.Endpoint.config_change(changed, removed)
     :ok
   end
+
+  defimpl Jason.Encoder, for: Decimal do
+    def encode(decimal, opts) do
+      Jason.Encoder.encode(Decimal.to_string(decimal), opts)
+    end
+  end
 end
