@@ -21,18 +21,18 @@ defmodule LiftskitBackendWeb.OneRepMaxControllerTest do
   end
 
   describe "index" do
-    test "lists all one-rep-max", %{conn: conn} do
-      conn = get(conn, ~p"/api/one-rep-max")
+    test "lists all one_rep_max", %{conn: conn} do
+      conn = get(conn, ~p"/api/one_rep_max")
       assert json_response(conn, 200)["data"] == []
     end
   end
 
   describe "create one_rep_max" do
     test "renders one_rep_max when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/api/one-rep-max", one_rep_max: @create_attrs)
+      conn = post(conn, ~p"/api/one_rep_max", one_rep_max: @create_attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
-      conn = get(conn, ~p"/api/one-rep-max/#{id}")
+      conn = get(conn, ~p"/api/one_rep_max/#{id}")
 
       assert %{
                "id" => ^id,
@@ -42,7 +42,7 @@ defmodule LiftskitBackendWeb.OneRepMaxControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, ~p"/api/one-rep-max", one_rep_max: @invalid_attrs)
+      conn = post(conn, ~p"/api/one_rep_max", one_rep_max: @invalid_attrs)
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -51,10 +51,10 @@ defmodule LiftskitBackendWeb.OneRepMaxControllerTest do
     setup [:create_one_rep_max]
 
     test "renders one_rep_max when data is valid", %{conn: conn, one_rep_max: %OneRepMax{id: id} = one_rep_max} do
-      conn = put(conn, ~p"/api/one-rep-max/#{one_rep_max}", one_rep_max: @update_attrs)
+      conn = put(conn, ~p"/api/one_rep_max/#{one_rep_max}", one_rep_max: @update_attrs)
       assert %{"id" => ^id} = json_response(conn, 200)["data"]
 
-      conn = get(conn, ~p"/api/one-rep-max/#{id}")
+      conn = get(conn, ~p"/api/one_rep_max/#{id}")
 
       assert %{
                "id" => ^id,
@@ -64,7 +64,7 @@ defmodule LiftskitBackendWeb.OneRepMaxControllerTest do
     end
 
     test "renders errors when data is invalid", %{conn: conn, one_rep_max: one_rep_max} do
-      conn = put(conn, ~p"/api/one-rep-max/#{one_rep_max}", one_rep_max: @invalid_attrs)
+      conn = put(conn, ~p"/api/one_rep_max/#{one_rep_max}", one_rep_max: @invalid_attrs)
       assert json_response(conn, 422)["errors"] != %{}
     end
   end
@@ -73,11 +73,11 @@ defmodule LiftskitBackendWeb.OneRepMaxControllerTest do
     setup [:create_one_rep_max]
 
     test "deletes chosen one_rep_max", %{conn: conn, one_rep_max: one_rep_max} do
-      conn = delete(conn, ~p"/api/one-rep-max/#{one_rep_max}")
+      conn = delete(conn, ~p"/api/one_rep_max/#{one_rep_max}")
       assert response(conn, 204)
 
       assert_error_sent 404, fn ->
-        get(conn, ~p"/api/one-rep-max/#{one_rep_max}")
+        get(conn, ~p"/api/one_rep_max/#{one_rep_max}")
       end
     end
   end
