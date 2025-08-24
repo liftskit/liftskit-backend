@@ -2,11 +2,36 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
   use LiftskitBackendWeb.ConnCase
 
   import LiftskitBackend.WorkoutsFixtures
+  import LiftskitBackend.ProgramsFixtures
   alias LiftskitBackend.Workouts.Workout
 
   @create_attrs %{
     name: "some name",
     bestWorkoutTime: "some bestWorkoutTime"
+  }
+  @create_with_exercises_attrs %{
+    name: "workout with exercises",
+    bestWorkoutTime: "10:30",
+    exercises: [
+      %{
+        ormPercent: "85.0",
+        reps: 8,
+        sets: 3,
+        time: "2:00",
+        weight: 135,
+        isSuperset: false,
+        exerciseRoot: 1
+      },
+      %{
+        ormPercent: "75.0",
+        reps: 12,
+        sets: 4,
+        time: "1:30",
+        weight: 95,
+        isSuperset: true,
+        exerciseRoot: 2
+      }
+    ]
   }
   @update_attrs %{
     name: "some updated name",
@@ -29,7 +54,11 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
 
   describe "create workout" do
     test "renders workout when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/api/workouts", workout: @create_attrs)
+      # Create a program first
+      program = program_fixture(conn.assigns.current_scope)
+      attrs = Map.put(@create_attrs, :programId, program.id)
+
+      conn = post(conn, ~p"/api/workouts", workout: attrs)
       assert %{"id" => id} = json_response(conn, 201)["data"]
 
       conn = get(conn, ~p"/api/workouts/#{id}")
@@ -39,6 +68,41 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
                "bestWorkoutTime" => "some bestWorkoutTime",
                "name" => "some name"
              } = json_response(conn, 200)["data"]
+    end
+
+    test "renders workout with exercises when exercises are provided", %{conn: conn} do
+      # Create a program first
+      program = program_fixture(conn.assigns.current_scope)
+      attrs = Map.put(@create_with_exercises_attrs, :programId, program.id)
+
+      conn = post(conn, ~p"/api/workouts", workout: attrs)
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      conn = get(conn, ~p"/api/workouts/#{id}")
+      response = json_response(conn, 200)["data"]
+
+      assert %{
+               "id" => ^id,
+               "bestWorkoutTime" => "10:30",
+               "name" => "workout with exercises",
+               "exercises" => exercises
+             } = response
+
+      assert length(exercises) == 2
+
+      # Check first exercise
+      [first_exercise | _] = exercises
+      assert first_exercise["reps"] == 8
+      assert first_exercise["sets"] == 3
+      assert first_exercise["weight"] == 135
+      assert first_exercise["isSuperset"] == false
+
+      # Check second exercise
+      [_, second_exercise | _] = exercises
+      assert second_exercise["reps"] == 12
+      assert second_exercise["sets"] == 4
+      assert second_exercise["weight"] == 95
+      assert second_exercise["isSuperset"] == true
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

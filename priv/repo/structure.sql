@@ -80,9 +80,9 @@ CREATE TABLE public.exercises (
     weight integer,
     "isSuperset" boolean DEFAULT false NOT NULL,
     "exerciseRoot" bigint,
-    user_id integer,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    updated_at timestamp(0) without time zone NOT NULL,
+    "workoutId" bigint
 );
 
 
@@ -212,7 +212,7 @@ CREATE TABLE public.programs (
     id bigint NOT NULL,
     name character varying(255),
     description character varying(255),
-    user_id integer,
+    "userId" integer,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -386,8 +386,7 @@ CREATE TABLE public.workouts (
     id bigint NOT NULL,
     name character varying(255),
     "bestWorkoutTime" character varying(255),
-    program_id bigint,
-    user_id integer,
+    "programId" bigint,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -607,10 +606,10 @@ CREATE INDEX "exercises_exerciseRoot_index" ON public.exercises USING btree ("ex
 
 
 --
--- Name: exercises_user_id_index; Type: INDEX; Schema: public; Owner: -
+-- Name: exercises_workout_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX exercises_user_id_index ON public.exercises USING btree (user_id);
+CREATE INDEX exercises_workout_id_index ON public.exercises USING btree ("workoutId");
 
 
 --
@@ -666,7 +665,7 @@ CREATE UNIQUE INDEX programs_name_index ON public.programs USING btree (name);
 -- Name: programs_user_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX programs_user_id_index ON public.programs USING btree (user_id);
+CREATE INDEX programs_user_id_index ON public.programs USING btree ("userId");
 
 
 --
@@ -722,14 +721,7 @@ CREATE UNIQUE INDEX users_username_index ON public.users USING btree (username);
 -- Name: workouts_program_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX workouts_program_id_index ON public.workouts USING btree (program_id);
-
-
---
--- Name: workouts_user_id_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX workouts_user_id_index ON public.workouts USING btree (user_id);
+CREATE INDEX workouts_program_id_index ON public.workouts USING btree ("programId");
 
 
 --
@@ -749,11 +741,11 @@ ALTER TABLE ONLY public.exercises
 
 
 --
--- Name: exercises exercises_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: exercises exercises_workout_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.exercises
-    ADD CONSTRAINT exercises_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT exercises_workout_id_fkey FOREIGN KEY ("workoutId") REFERENCES public.workouts(id) ON DELETE CASCADE;
 
 
 --
@@ -793,7 +785,7 @@ ALTER TABLE ONLY public.one_rep_max
 --
 
 ALTER TABLE ONLY public.programs
-    ADD CONSTRAINT programs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT programs_user_id_fkey FOREIGN KEY ("userId") REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -817,15 +809,7 @@ ALTER TABLE ONLY public.users
 --
 
 ALTER TABLE ONLY public.workouts
-    ADD CONSTRAINT workouts_program_id_fkey FOREIGN KEY (program_id) REFERENCES public.programs(id);
-
-
---
--- Name: workouts workouts_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.workouts
-    ADD CONSTRAINT workouts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT workouts_program_id_fkey FOREIGN KEY ("programId") REFERENCES public.programs(id);
 
 
 --
@@ -848,3 +832,8 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250824021933);
 INSERT INTO public."schema_migrations" (version) VALUES (20250824050225);
 INSERT INTO public."schema_migrations" (version) VALUES (20250824054657);
 INSERT INTO public."schema_migrations" (version) VALUES (20250824061712);
+INSERT INTO public."schema_migrations" (version) VALUES (20250824071137);
+INSERT INTO public."schema_migrations" (version) VALUES (20250824071627);
+INSERT INTO public."schema_migrations" (version) VALUES (20250824071713);
+INSERT INTO public."schema_migrations" (version) VALUES (20250824072427);
+INSERT INTO public."schema_migrations" (version) VALUES (20250824074336);

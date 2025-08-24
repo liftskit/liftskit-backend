@@ -11,7 +11,7 @@ defmodule LiftskitBackendWeb.WorkoutController do
     render(conn, :index, workouts: workouts)
   end
 
-  def create(conn, %{"workout" => workout_params}) do
+  def create(conn, workout_params) do
     with {:ok, %Workout{} = workout} <- Workouts.create_workout(conn.assigns.current_scope, workout_params) do
       conn
       |> put_status(:created)

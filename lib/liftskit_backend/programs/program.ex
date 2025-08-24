@@ -6,8 +6,9 @@ defmodule LiftskitBackend.Programs.Program do
     field :name, :string
     field :description, :string
 
-    belongs_to :user, LiftskitBackend.Users.User
-    has_many :workouts, LiftskitBackend.Workouts.Workout
+    # Use camelCase field name that matches the database column
+    belongs_to :user, LiftskitBackend.Users.User, foreign_key: :userId
+    has_many :workouts, LiftskitBackend.Workouts.Workout, foreign_key: :programId
 
     timestamps(type: :utc_datetime)
   end
@@ -15,9 +16,9 @@ defmodule LiftskitBackend.Programs.Program do
   @doc false
   def changeset(program, attrs) do
     program
-    |> cast(attrs, [:name, :description, :user_id])
-    |> validate_required([:name, :description, :user_id])
+    |> cast(attrs, [:name, :description, :userId])
+    |> validate_required([:name, :description, :userId])
     |> unique_constraint(:name)
-    |> foreign_key_constraint(:user_id)
+    |> foreign_key_constraint(:userId)
   end
 end

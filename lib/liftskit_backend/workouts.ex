@@ -41,7 +41,13 @@ defmodule LiftskitBackend.Workouts do
 
   """
   def list_workouts(%Scope{} = scope) do
-    Repo.all_by(Workout, user_id: scope.user.id)
+    # Get workouts through programs that belong to the user
+    Repo.all(
+      from w in Workout,
+        join: p in assoc(w, :program),
+        where: p.userId == ^scope.user.id,
+        preload: [program: p, exercises: [exercise_root: []]]
+    )
   end
 
   @doc """
@@ -59,7 +65,13 @@ defmodule LiftskitBackend.Workouts do
 
   """
   def get_workout!(%Scope{} = scope, id) do
-    Repo.get_by!(Workout, id: id, user_id: scope.user.id)
+    # Get workout through program that belongs to the user
+    Repo.one!(
+      from w in Workout,
+        join: p in assoc(w, :program),
+        where: w.id == ^id and p.userId == ^scope.user.id,
+        preload: [program: p, exercises: [exercise_root: []]]
+    )
   end
 
   @doc """
@@ -77,8 +89,10 @@ defmodule LiftskitBackend.Workouts do
   def create_workout(%Scope{} = scope, attrs) do
     with {:ok, workout = %Workout{}} <-
            %Workout{}
-           |> Workout.changeset(attrs, scope)
+           |> Workout.changeset(attrs)
            |> Repo.insert() do
+      # Preload exercises and program for JSON serialization
+      workout = Repo.preload(workout, [:program, exercises: [exercise_root: []]])
       broadcast(scope, {:created, workout})
       {:ok, workout}
     end
@@ -97,12 +111,15 @@ defmodule LiftskitBackend.Workouts do
 
   """
   def update_workout(%Scope{} = scope, %Workout{} = workout, attrs) do
-    true = workout.user_id == scope.user.id
+    # Verify ownership through the program
+    true = workout.program.userId == scope.user.id
 
     with {:ok, workout = %Workout{}} <-
            workout
-           |> Workout.changeset(attrs, scope)
+           |> Workout.changeset(attrs)
            |> Repo.update() do
+      # Preload exercises and program for JSON serialization
+      workout = Repo.preload(workout, [:program, exercises: [exercise_root: []]])
       broadcast(scope, {:updated, workout})
       {:ok, workout}
     end
@@ -121,7 +138,8 @@ defmodule LiftskitBackend.Workouts do
 
   """
   def delete_workout(%Scope{} = scope, %Workout{} = workout) do
-    true = workout.user_id == scope.user.id
+    # Verify ownership through the program
+    true = workout.program.userId == scope.user.id
 
     with {:ok, workout = %Workout{}} <-
            Repo.delete(workout) do
@@ -140,8 +158,10 @@ defmodule LiftskitBackend.Workouts do
 
   """
   def change_workout(%Scope{} = scope, %Workout{} = workout, attrs \\ %{}) do
-    true = workout.user_id == scope.user.id
+    # Verify the workout belongs to a program owned by the user
+    workout = Repo.preload(workout, :program)
+    true = workout.program.userId == scope.user.id
 
-    Workout.changeset(workout, attrs, scope)
+    Workout.changeset(workout, attrs)
   end
 end

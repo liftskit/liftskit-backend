@@ -11,7 +11,9 @@ defmodule LiftskitBackend.Exercises.Exercise do
     field :time, :string
     field :weight, :integer
     field :isSuperset, :boolean, default: false
-    field :exerciseRoot, :id
+
+    belongs_to :workout, LiftskitBackend.Workouts.Workout, foreign_key: :workoutId
+    belongs_to :exercise_root, LiftskitBackend.ExerciseRoots.ExerciseRoot, foreign_key: :exerciseRoot
 
     timestamps(type: :utc_datetime)
   end
@@ -21,5 +23,7 @@ defmodule LiftskitBackend.Exercises.Exercise do
     exercise
     |> cast(attrs, [:ormPercent, :reps, :sets, :time, :weight, :isSuperset, :exerciseRoot])
     |> validate_required([:ormPercent, :reps, :sets, :time, :weight, :isSuperset, :exerciseRoot])
+    |> foreign_key_constraint(:workoutId)
+    |> foreign_key_constraint(:exerciseRoot)
   end
 end
