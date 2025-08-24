@@ -51,6 +51,8 @@ defmodule LiftskitBackendWeb.Router do
     resources "/exercise_roots", ExerciseRootController, only: [:index, :create, :delete]
     resources "/exercises", ExerciseController, only: [:index, :create, :delete]
     resources "/one_rep_maxes", OneRepMaxController, only: [:index, :create, :delete, :show, :update]
+    resources "/programs", ProgramController, only: [:index, :create, :delete, :show, :update]
+    resources "/workouts", WorkoutController, only: [:index, :create, :delete, :show, :update]
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
