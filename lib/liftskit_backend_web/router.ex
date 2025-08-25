@@ -46,13 +46,24 @@ defmodule LiftskitBackendWeb.Router do
     get "/users/:user_id/conversations", MessageController, :conversations_with_user
 
     # Liftskit API
+
+    ## Admin
     resources "/official_exercises", OfficialExerciseController, only: [:index, :create, :delete]
-    resources "/tags", TagController, only: [:index, :create, :delete]
+    resources "/one_rep_maxes", OneRepMaxController, only: [:index, :create, :delete, :show, :update]
+
+    ## Workouts
     resources "/exercise_roots", ExerciseRootController, only: [:index, :create, :delete]
     resources "/exercises", ExerciseController, only: [:index, :create, :delete]
-    resources "/one_rep_maxes", OneRepMaxController, only: [:index, :create, :delete, :show, :update]
     resources "/programs", ProgramController, only: [:index, :create, :delete, :show, :update]
     resources "/workouts", WorkoutController, only: [:index, :create, :delete, :show, :update]
+
+    ## Workout performed
+    resources "/exercises_performed", ExercisePerformedController, only: [:index, :create, :delete, :show, :update]
+    resources "/workouts_performed", WorkoutPerformedController, only: [:index, :create, :delete, :show, :update]
+
+    ## Other
+    resources "/tags", TagController, only: [:index, :create, :delete]
+
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
