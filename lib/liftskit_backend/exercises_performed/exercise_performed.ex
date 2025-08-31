@@ -10,7 +10,7 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
     field :time, :integer
     field :weight, :integer
 
-    belongs_to :workout_performed, LiftskitBackend.WorkoutsPerformed.WorkoutPerformed, foreign_key: :workoutPerformedId
+    belongs_to :workout_performed, LiftskitBackend.WorkoutsPerformed.WorkoutPerformed, foreign_key: :workout_performed_id
 
     timestamps(type: :utc_datetime)
   end
@@ -20,6 +20,6 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
     exercise_performed
     |> cast(attrs, [:_type, :name, :reps, :sets, :time, :weight])
     |> validate_required([:_type, :name, :reps, :sets, :time, :weight])
-    |> foreign_key_constraint(:workoutPerformedId)
+    |> foreign_key_constraint(:workout_performed_id)
   end
 end

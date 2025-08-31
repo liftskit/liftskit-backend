@@ -4,11 +4,11 @@ defmodule LiftskitBackend.Workouts.Workout do
 
   schema "workouts" do
     field :name, :string
-    field :bestWorkoutTime, :string
+    field :best_workout_time, :string
 
-    # Use camelCase field name that matches the database column
-    belongs_to :program, LiftskitBackend.Programs.Program, foreign_key: :programId
-    has_many :exercises, LiftskitBackend.Exercises.Exercise, foreign_key: :workoutId
+    # Use snake_case field name that matches the database column
+    belongs_to :program, LiftskitBackend.Programs.Program, foreign_key: :program_id
+    has_many :exercises, LiftskitBackend.Exercises.Exercise, foreign_key: :workout_id
 
     timestamps(type: :utc_datetime)
   end
@@ -16,9 +16,9 @@ defmodule LiftskitBackend.Workouts.Workout do
   @doc false
   def changeset(workout, attrs) do
     workout
-    |> cast(attrs, [:name, :bestWorkoutTime, :programId])
-    |> validate_required([:name, :bestWorkoutTime, :programId])
-    |> foreign_key_constraint(:programId)
+    |> cast(attrs, [:name, :best_workout_time, :program_id])
+    |> validate_required([:name, :best_workout_time, :program_id])
+    |> foreign_key_constraint(:program_id)
     |> cast_assoc(:exercises, with: &LiftskitBackend.Exercises.Exercise.changeset/2)
     |> validate_exercises_present()
   end

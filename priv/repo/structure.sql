@@ -44,11 +44,11 @@ CREATE TABLE public.exercise_performed (
     name character varying(255),
     reps integer,
     sets integer,
+    "time" integer,
     weight integer,
-    user_id integer,
+    workout_performed_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL,
-    "time" integer
+    updated_at timestamp(0) without time zone NOT NULL
 );
 
 
@@ -79,7 +79,7 @@ CREATE TABLE public.exercise_roots (
     id bigint NOT NULL,
     name character varying(255),
     _type character varying(255),
-    user_id integer,
+    user_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -105,21 +105,54 @@ ALTER SEQUENCE public.exercise_roots_id_seq OWNED BY public.exercise_roots.id;
 
 
 --
+-- Name: exercise_supersets; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.exercise_supersets (
+    id bigint NOT NULL,
+    exercise_id bigint NOT NULL,
+    superset_exercise_id bigint NOT NULL,
+    "order" integer,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: exercise_supersets_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.exercise_supersets_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: exercise_supersets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.exercise_supersets_id_seq OWNED BY public.exercise_supersets.id;
+
+
+--
 -- Name: exercises; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.exercises (
     id bigint NOT NULL,
-    "ormPercent" numeric,
+    orm_percent numeric,
     reps integer,
     sets integer,
-    "time" character varying(255) DEFAULT NULL::character varying,
+    "time" character varying(255),
     weight integer,
-    "isSuperset" boolean DEFAULT false NOT NULL,
-    "exerciseRoot" bigint,
+    is_superset boolean DEFAULT false NOT NULL,
+    workout_id bigint NOT NULL,
+    exercise_root_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL,
-    "workoutId" bigint
+    updated_at timestamp(0) without time zone NOT NULL
 );
 
 
@@ -152,7 +185,6 @@ CREATE TABLE public.messages (
     created timestamp(0) without time zone,
     from_user_id bigint,
     to_user_id bigint,
-    user_id integer,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -214,9 +246,9 @@ ALTER SEQUENCE public.official_exercises_id_seq OWNED BY public.official_exercis
 
 CREATE TABLE public.one_rep_max (
     id bigint NOT NULL,
-    "exerciseName" character varying(255),
-    "oneRepMax" integer,
-    user_id integer,
+    exercise_name character varying(255),
+    one_rep_max integer,
+    user_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -249,7 +281,7 @@ CREATE TABLE public.programs (
     id bigint NOT NULL,
     name character varying(255),
     description character varying(255),
-    "userId" integer,
+    user_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -354,11 +386,10 @@ CREATE TABLE public.users (
     id bigint NOT NULL,
     username character varying(255),
     email public.citext NOT NULL,
-    inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL,
     hashed_password character varying(255),
     confirmed_at timestamp(0) without time zone,
-    user_id integer
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
 );
 
 
@@ -392,7 +423,8 @@ CREATE TABLE public.users_tokens (
     context character varying(255) NOT NULL,
     sent_to character varying(255),
     authenticated_at timestamp(0) without time zone,
-    inserted_at timestamp(0) without time zone NOT NULL
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
 );
 
 
@@ -422,8 +454,8 @@ ALTER SEQUENCE public.users_tokens_id_seq OWNED BY public.users_tokens.id;
 CREATE TABLE public.workouts (
     id bigint NOT NULL,
     name character varying(255),
-    "bestWorkoutTime" character varying(255),
-    "programId" bigint,
+    best_workout_time character varying(255),
+    program_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -454,11 +486,11 @@ ALTER SEQUENCE public.workouts_id_seq OWNED BY public.workouts.id;
 
 CREATE TABLE public.workouts_performed (
     id bigint NOT NULL,
-    "programName" character varying(255),
-    "workoutDate" timestamp(0) without time zone,
-    "workoutTime" integer,
-    "workoutName" character varying(255),
-    user_id integer,
+    program_name character varying(255),
+    workout_date timestamp(0) without time zone,
+    workout_time integer,
+    workout_name character varying(255),
+    user_id bigint NOT NULL,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL
 );
@@ -495,6 +527,13 @@ ALTER TABLE ONLY public.exercise_performed ALTER COLUMN id SET DEFAULT nextval('
 --
 
 ALTER TABLE ONLY public.exercise_roots ALTER COLUMN id SET DEFAULT nextval('public.exercise_roots_id_seq'::regclass);
+
+
+--
+-- Name: exercise_supersets id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.exercise_supersets ALTER COLUMN id SET DEFAULT nextval('public.exercise_supersets_id_seq'::regclass);
 
 
 --
@@ -588,6 +627,14 @@ ALTER TABLE ONLY public.exercise_performed
 
 ALTER TABLE ONLY public.exercise_roots
     ADD CONSTRAINT exercise_roots_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: exercise_supersets exercise_supersets_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.exercise_supersets
+    ADD CONSTRAINT exercise_supersets_pkey PRIMARY KEY (id);
 
 
 --
@@ -687,17 +734,17 @@ ALTER TABLE ONLY public.workouts
 
 
 --
--- Name: exercise_performed_user_id_index; Type: INDEX; Schema: public; Owner: -
+-- Name: exercise_performed_workout_performed_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX exercise_performed_user_id_index ON public.exercise_performed USING btree (user_id);
+CREATE INDEX exercise_performed_workout_performed_id_index ON public.exercise_performed USING btree (workout_performed_id);
 
 
 --
--- Name: exercise_roots_name_index; Type: INDEX; Schema: public; Owner: -
+-- Name: exercise_roots_name_user_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX exercise_roots_name_index ON public.exercise_roots USING btree (name);
+CREATE UNIQUE INDEX exercise_roots_name_user_id_index ON public.exercise_roots USING btree (name, user_id);
 
 
 --
@@ -708,17 +755,38 @@ CREATE INDEX exercise_roots_user_id_index ON public.exercise_roots USING btree (
 
 
 --
--- Name: exercises_exerciseRoot_index; Type: INDEX; Schema: public; Owner: -
+-- Name: exercise_supersets_exercise_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX "exercises_exerciseRoot_index" ON public.exercises USING btree ("exerciseRoot");
+CREATE INDEX exercise_supersets_exercise_id_index ON public.exercise_supersets USING btree (exercise_id);
+
+
+--
+-- Name: exercise_supersets_exercise_id_superset_exercise_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX exercise_supersets_exercise_id_superset_exercise_id_index ON public.exercise_supersets USING btree (exercise_id, superset_exercise_id);
+
+
+--
+-- Name: exercise_supersets_superset_exercise_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX exercise_supersets_superset_exercise_id_index ON public.exercise_supersets USING btree (superset_exercise_id);
+
+
+--
+-- Name: exercises_exercise_root_id_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX exercises_exercise_root_id_index ON public.exercises USING btree (exercise_root_id);
 
 
 --
 -- Name: exercises_workout_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX exercises_workout_id_index ON public.exercises USING btree ("workoutId");
+CREATE INDEX exercises_workout_id_index ON public.exercises USING btree (workout_id);
 
 
 --
@@ -736,13 +804,6 @@ CREATE INDEX messages_to_user_id_index ON public.messages USING btree (to_user_i
 
 
 --
--- Name: messages_user_id_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX messages_user_id_index ON public.messages USING btree (user_id);
-
-
---
 -- Name: official_exercises_name_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -750,10 +811,10 @@ CREATE UNIQUE INDEX official_exercises_name_index ON public.official_exercises U
 
 
 --
--- Name: one_rep_max_exerciseName_index; Type: INDEX; Schema: public; Owner: -
+-- Name: one_rep_max_exercise_name_user_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX "one_rep_max_exerciseName_index" ON public.one_rep_max USING btree ("exerciseName");
+CREATE UNIQUE INDEX one_rep_max_exercise_name_user_id_index ON public.one_rep_max USING btree (exercise_name, user_id);
 
 
 --
@@ -764,17 +825,17 @@ CREATE INDEX one_rep_max_user_id_index ON public.one_rep_max USING btree (user_i
 
 
 --
--- Name: programs_name_index; Type: INDEX; Schema: public; Owner: -
+-- Name: programs_name_user_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX programs_name_index ON public.programs USING btree (name);
+CREATE UNIQUE INDEX programs_name_user_id_index ON public.programs USING btree (name, user_id);
 
 
 --
 -- Name: programs_user_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX programs_user_id_index ON public.programs USING btree ("userId");
+CREATE INDEX programs_user_id_index ON public.programs USING btree (user_id);
 
 
 --
@@ -813,13 +874,6 @@ CREATE INDEX users_tokens_user_id_index ON public.users_tokens USING btree (user
 
 
 --
--- Name: users_user_id_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX users_user_id_index ON public.users USING btree (user_id);
-
-
---
 -- Name: users_username_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -837,15 +891,15 @@ CREATE INDEX workouts_performed_user_id_index ON public.workouts_performed USING
 -- Name: workouts_program_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX workouts_program_id_index ON public.workouts USING btree ("programId");
+CREATE INDEX workouts_program_id_index ON public.workouts USING btree (program_id);
 
 
 --
--- Name: exercise_performed exercise_performed_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: exercise_performed exercise_performed_workout_performed_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.exercise_performed
-    ADD CONSTRAINT exercise_performed_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT exercise_performed_workout_performed_id_fkey FOREIGN KEY (workout_performed_id) REFERENCES public.workouts_performed(id) ON DELETE CASCADE;
 
 
 --
@@ -857,11 +911,27 @@ ALTER TABLE ONLY public.exercise_roots
 
 
 --
--- Name: exercises exercises_exerciseRoot_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: exercise_supersets exercise_supersets_exercise_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.exercise_supersets
+    ADD CONSTRAINT exercise_supersets_exercise_id_fkey FOREIGN KEY (exercise_id) REFERENCES public.exercises(id) ON DELETE CASCADE;
+
+
+--
+-- Name: exercise_supersets exercise_supersets_superset_exercise_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.exercise_supersets
+    ADD CONSTRAINT exercise_supersets_superset_exercise_id_fkey FOREIGN KEY (superset_exercise_id) REFERENCES public.exercises(id) ON DELETE CASCADE;
+
+
+--
+-- Name: exercises exercises_exercise_root_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.exercises
-    ADD CONSTRAINT "exercises_exerciseRoot_fkey" FOREIGN KEY ("exerciseRoot") REFERENCES public.exercise_roots(id);
+    ADD CONSTRAINT exercises_exercise_root_id_fkey FOREIGN KEY (exercise_root_id) REFERENCES public.exercise_roots(id) ON DELETE CASCADE;
 
 
 --
@@ -869,7 +939,7 @@ ALTER TABLE ONLY public.exercises
 --
 
 ALTER TABLE ONLY public.exercises
-    ADD CONSTRAINT exercises_workout_id_fkey FOREIGN KEY ("workoutId") REFERENCES public.workouts(id) ON DELETE CASCADE;
+    ADD CONSTRAINT exercises_workout_id_fkey FOREIGN KEY (workout_id) REFERENCES public.workouts(id) ON DELETE CASCADE;
 
 
 --
@@ -877,7 +947,7 @@ ALTER TABLE ONLY public.exercises
 --
 
 ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT messages_from_user_id_fkey FOREIGN KEY (from_user_id) REFERENCES public.users(id);
+    ADD CONSTRAINT messages_from_user_id_fkey FOREIGN KEY (from_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -885,15 +955,7 @@ ALTER TABLE ONLY public.messages
 --
 
 ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT messages_to_user_id_fkey FOREIGN KEY (to_user_id) REFERENCES public.users(id);
-
-
---
--- Name: messages messages_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.messages
-    ADD CONSTRAINT messages_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT messages_to_user_id_fkey FOREIGN KEY (to_user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -909,7 +971,7 @@ ALTER TABLE ONLY public.one_rep_max
 --
 
 ALTER TABLE ONLY public.programs
-    ADD CONSTRAINT programs_user_id_fkey FOREIGN KEY ("userId") REFERENCES public.users(id) ON DELETE CASCADE;
+    ADD CONSTRAINT programs_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -918,14 +980,6 @@ ALTER TABLE ONLY public.programs
 
 ALTER TABLE ONLY public.users_tokens
     ADD CONSTRAINT users_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
-
-
---
--- Name: users users_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
 --
@@ -941,7 +995,7 @@ ALTER TABLE ONLY public.workouts_performed
 --
 
 ALTER TABLE ONLY public.workouts
-    ADD CONSTRAINT workouts_program_id_fkey FOREIGN KEY ("programId") REFERENCES public.programs(id);
+    ADD CONSTRAINT workouts_program_id_fkey FOREIGN KEY (program_id) REFERENCES public.programs(id) ON DELETE CASCADE;
 
 
 --
@@ -975,3 +1029,28 @@ INSERT INTO public."schema_migrations" (version) VALUES (20250824175403);
 INSERT INTO public."schema_migrations" (version) VALUES (20250824175715);
 INSERT INTO public."schema_migrations" (version) VALUES (20250824180759);
 INSERT INTO public."schema_migrations" (version) VALUES (20250824185612);
+INSERT INTO public."schema_migrations" (version) VALUES (20250824191147);
+INSERT INTO public."schema_migrations" (version) VALUES (20250830215829);
+INSERT INTO public."schema_migrations" (version) VALUES (20250830220644);
+INSERT INTO public."schema_migrations" (version) VALUES (20250830232632);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831185827);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831191646);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831193242);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831195157);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831195848);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831202352);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831205822);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831205917);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831205931);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831205946);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210001);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210023);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210038);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210054);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210110);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210125);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210145);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210207);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210224);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210241);
+INSERT INTO public."schema_migrations" (version) VALUES (20250831210305);

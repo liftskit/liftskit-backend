@@ -19,8 +19,8 @@ defmodule LiftskitBackendWeb.WorkoutJSON do
     %{
       id: workout.id,
       name: workout.name,
-      bestWorkoutTime: workout.bestWorkoutTime,
-      programId: workout.programId,
+      best_workout_time: workout.best_workout_time,
+      program_id: workout.program_id,
       exercises: for(exercise <- workout.exercises, do: exercise_data(exercise))
     }
   end
@@ -28,14 +28,14 @@ defmodule LiftskitBackendWeb.WorkoutJSON do
   defp exercise_data(exercise) do
     %{
       id: exercise.id,
-      ormPercent: exercise.ormPercent,
+      orm_percent: exercise.orm_percent,
       reps: exercise.reps,
       sets: exercise.sets,
       time: exercise.time,
       weight: exercise.weight,
-      isSuperset: exercise.isSuperset,
-      exerciseRoot: exercise_root_data(exercise.exercise_root),
-      workoutId: exercise.workoutId
+      is_superset: exercise.is_superset,
+      exercise_root: exercise_root_data(exercise.exercise_root),
+      workout_id: exercise.workout_id
     }
   end
 

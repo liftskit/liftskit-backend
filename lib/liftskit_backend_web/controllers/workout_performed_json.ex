@@ -18,11 +18,11 @@ defmodule LiftskitBackendWeb.WorkoutPerformedJSON do
   defp data(%WorkoutPerformed{} = workout_performed) do
     %{
       id: workout_performed.id,
-      programName: workout_performed.programName,
-      workoutDate: workout_performed.workoutDate,
-      workoutTime: workout_performed.workoutTime,
-      workoutName: workout_performed.workoutName,
-      workoutPerformed: for(exercise <- workout_performed.exercisesPerformed, do: exercise_data(exercise))
+      program_name: workout_performed.program_name,
+      workout_date: workout_performed.workout_date,
+      workout_time: workout_performed.workout_time,
+      workout_name: workout_performed.workout_name,
+      workout_performed: for(exercise <- workout_performed.exercises_performed, do: exercise_data(exercise))
     }
   end
 

@@ -19,7 +19,7 @@ defmodule LiftskitBackend.Accounts.UserToken do
     field :authenticated_at, :utc_datetime
     belongs_to :user, LiftskitBackend.Accounts.User
 
-    timestamps(type: :utc_datetime, updated_at: false)
+    timestamps(type: :utc_datetime)
   end
 
   @doc """

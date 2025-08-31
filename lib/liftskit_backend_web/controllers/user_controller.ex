@@ -2,7 +2,7 @@ defmodule LiftskitBackendWeb.UserController do
   use LiftskitBackendWeb, :controller
 
   alias LiftskitBackend.Users
-  alias LiftskitBackend.Users.User
+  alias LiftskitBackend.Accounts.User
 
   action_fallback LiftskitBackendWeb.FallbackController
 

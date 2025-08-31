@@ -42,8 +42,8 @@ defmodule LiftskitBackend.WorkoutsPerformed do
   """
   def list_workouts_performed(%Scope{} = scope) do
     WorkoutPerformed
-    |> where(userId: ^scope.user.id)
-    |> preload(:exercisesPerformed)
+    |> where(user_id: ^scope.user.id)
+    |> preload(:exercises_performed)
     |> Repo.all()
   end
 
@@ -63,8 +63,8 @@ defmodule LiftskitBackend.WorkoutsPerformed do
   """
   def get_workout_performed!(%Scope{} = scope, id) do
     WorkoutPerformed
-    |> where(id: ^id, userId: ^scope.user.id)
-    |> preload(:exercisesPerformed)
+    |> where(id: ^id, user_id: ^scope.user.id)
+    |> preload(:exercises_performed)
     |> Repo.one!()
   end
 
@@ -81,7 +81,7 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def create_workout_performed(%Scope{} = scope, attrs) do
-    attrs = Map.put(attrs, "userId", scope.user.id)
+    attrs = Map.put(attrs, "user_id", scope.user.id)
 
     with {:ok, workout_performed = %WorkoutPerformed{}} <-
            %WorkoutPerformed{}
@@ -105,7 +105,7 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def update_workout_performed(%Scope{} = scope, %WorkoutPerformed{} = workout_performed, attrs) do
-    true = workout_performed.userId == scope.user.id
+    true = workout_performed.user_id == scope.user.id
 
     with {:ok, workout_performed = %WorkoutPerformed{}} <-
            workout_performed
@@ -129,7 +129,7 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def delete_workout_performed(%Scope{} = scope, %WorkoutPerformed{} = workout_performed) do
-    true = workout_performed.userId == scope.user.id
+    true = workout_performed.user_id == scope.user.id
 
     with {:ok, workout_performed = %WorkoutPerformed{}} <-
            Repo.delete(workout_performed) do
@@ -148,7 +148,7 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def change_workout_performed(%Scope{} = scope, %WorkoutPerformed{} = workout_performed, attrs \\ %{}) do
-    true = workout_performed.userId == scope.user.id
+    true = workout_performed.user_id == scope.user.id
 
     WorkoutPerformed.changeset(workout_performed, attrs)
   end

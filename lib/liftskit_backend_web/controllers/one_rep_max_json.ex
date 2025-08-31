@@ -29,8 +29,8 @@ defmodule LiftskitBackendWeb.OneRepMaxJSON do
   defp data(%OneRepMax{} = one_rep_max) do
     %{
       id: one_rep_max.id,
-      exerciseName: one_rep_max.exerciseName,
-      oneRepMax: one_rep_max.oneRepMax
+      exercise_name: one_rep_max.exercise_name,
+      one_rep_max: one_rep_max.one_rep_max
     }
   end
 end

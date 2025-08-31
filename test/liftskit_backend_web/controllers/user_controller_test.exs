@@ -2,7 +2,7 @@ defmodule LiftskitBackendWeb.UserControllerTest do
   use LiftskitBackendWeb.ConnCase
 
   import LiftskitBackend.UsersFixtures
-  alias LiftskitBackend.Users.User
+  alias LiftskitBackend.Accounts.User
 
   @create_attrs %{
     username: "some username",

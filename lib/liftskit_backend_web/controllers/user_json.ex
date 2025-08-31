@@ -1,5 +1,5 @@
 defmodule LiftskitBackendWeb.UserJSON do
-  alias LiftskitBackend.Users.User
+  alias LiftskitBackend.Accounts.User
 
   @doc """
   Renders a list of users.

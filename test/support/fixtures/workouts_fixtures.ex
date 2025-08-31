@@ -13,9 +13,9 @@ defmodule LiftskitBackend.WorkoutsFixtures do
 
     attrs =
       Enum.into(attrs, %{
-        bestWorkoutTime: "some bestWorkoutTime",
+        best_workout_time: "some best_workout_time",
         name: "some name",
-        programId: program.id
+        program_id: program.id
       })
 
     {:ok, workout} = LiftskitBackend.Workouts.create_workout(scope, attrs)

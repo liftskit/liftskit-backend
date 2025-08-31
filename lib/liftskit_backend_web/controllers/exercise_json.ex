@@ -30,17 +30,17 @@ defmodule LiftskitBackendWeb.ExerciseJSON do
   end
 
   defp data(%Scope{} = scope, %Exercise{} = exercise) do
-    exercise_root_id = exercise.exerciseRoot
+    exercise_root_id = exercise.exercise_root_id
     exercise_root = ExerciseRoots.get_exercise_root!(scope, exercise_root_id)
     superset_exercises = Exercises.get_superset_exercises!(scope, exercise.id)
     %{
       id: exercise.id,
-      orm_percent: if(exercise.ormPercent, do: Decimal.to_string(exercise.ormPercent), else: nil),
+      orm_percent: if(exercise.orm_percent, do: Decimal.to_string(exercise.orm_percent), else: nil),
       reps: exercise.reps,
       sets: exercise.sets,
       time: exercise.time,
       weight: exercise.weight,
-      is_superset: exercise.isSuperset,
+      is_superset: exercise.is_superset,
       exercise_root: %{
         id: exercise_root.id,
         name: exercise_root.name,
@@ -51,16 +51,16 @@ defmodule LiftskitBackendWeb.ExerciseJSON do
   end
 
   defp superset_exercise_data(scope, superset_exercise) do
-    exercise_root_id = superset_exercise.exerciseRoot
+    exercise_root_id = superset_exercise.exercise_root_id
     exercise_root = ExerciseRoots.get_exercise_root!(scope, exercise_root_id)
     %{
       id: superset_exercise.id,
-      orm_percent: if(superset_exercise.ormPercent, do: Decimal.to_string(superset_exercise.ormPercent), else: nil),
+      orm_percent: if(superset_exercise.orm_percent, do: Decimal.to_string(superset_exercise.orm_percent), else: nil),
       reps: superset_exercise.reps,
       sets: superset_exercise.sets,
       time: superset_exercise.time,
       weight: superset_exercise.weight,
-      is_superset: superset_exercise.isSuperset,
+      is_superset: superset_exercise.is_superset,
       exercise_root: %{
         id: exercise_root.id,
         name: exercise_root.name,

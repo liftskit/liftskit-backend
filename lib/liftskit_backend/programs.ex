@@ -41,7 +41,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def list_programs(%Scope{} = scope) do
-    Repo.all_by(Program, userId: scope.user.id)
+    Repo.all_by(Program, user_id: scope.user.id)
   end
 
   @doc """
@@ -59,7 +59,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def get_program!(%Scope{} = scope, id) do
-    Repo.get_by!(Program, id: id, userId: scope.user.id)
+    Repo.get_by!(Program, id: id, user_id: scope.user.id)
   end
 
   @doc """
@@ -75,7 +75,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def create_program(%Scope{} = scope, attrs) do
-    attrs = Map.put(attrs, "userId", scope.user.id)
+    attrs = Map.put(attrs, "user_id", scope.user.id)
 
     with {:ok, program = %Program{}} <-
            %Program{}
@@ -99,7 +99,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def update_program(%Scope{} = scope, %Program{} = program, attrs) do
-    true = program.userId == scope.user.id
+    true = program.user_id == scope.user.id
 
     with {:ok, program = %Program{}} <-
            program
@@ -123,7 +123,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def delete_program(%Scope{} = scope, %Program{} = program) do
-    true = program.userId == scope.user.id
+    true = program.user_id == scope.user.id
 
     with {:ok, program = %Program{}} <-
            Repo.delete(program) do
@@ -142,7 +142,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def change_program(%Scope{} = scope, %Program{} = program, attrs \\ %{}) do
-    true = program.userId == scope.user.id
+    true = program.user_id == scope.user.id
 
     Program.changeset(program, attrs)
   end

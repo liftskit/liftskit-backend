@@ -4,7 +4,7 @@ defmodule LiftskitBackend.UsersTest do
   alias LiftskitBackend.Users
 
   describe "users" do
-    alias LiftskitBackend.Users.User
+    alias LiftskitBackend.Accounts.User
 
     import LiftskitBackend.UsersFixtures
 

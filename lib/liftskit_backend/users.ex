@@ -6,7 +6,7 @@ defmodule LiftskitBackend.Users do
   import Ecto.Query, warn: false
   alias LiftskitBackend.Repo
 
-  alias LiftskitBackend.Users.User
+  alias LiftskitBackend.Accounts.User
   alias LiftskitBackend.Accounts.Scope
 
   @doc """
@@ -68,7 +68,7 @@ defmodule LiftskitBackend.Users do
   """
   def create_user(attrs) do
     %User{}
-    |> User.changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -86,7 +86,7 @@ defmodule LiftskitBackend.Users do
   """
   def update_user(%User{} = user, attrs) do
     user
-    |> User.changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.update()
   end
 
@@ -118,6 +118,6 @@ defmodule LiftskitBackend.Users do
 
   """
   def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
+    User.registration_changeset(user, attrs)
   end
 end

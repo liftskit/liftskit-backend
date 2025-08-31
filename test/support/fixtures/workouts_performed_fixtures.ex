@@ -10,10 +10,10 @@ defmodule LiftskitBackend.WorkoutsPerformedFixtures do
   def workout_performed_fixture(scope, attrs \\ %{}) do
     attrs =
       Enum.into(attrs, %{
-        programName: "some programName",
-        workoutDate: ~U[2025-08-23 18:56:00Z],
-        workoutName: "some workoutName",
-        workoutTime: 42
+        program_name: "some program_name",
+        workout_date: ~U[2025-08-23 18:56:00Z],
+        workout_name: "some workout_name",
+        workout_time: 42
       })
 
     {:ok, workout_performed} = LiftskitBackend.WorkoutsPerformed.create_workout_performed(scope, attrs)
