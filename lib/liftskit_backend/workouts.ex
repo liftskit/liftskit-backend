@@ -46,7 +46,7 @@ defmodule LiftskitBackend.Workouts do
       from w in Workout,
         join: p in assoc(w, :program),
         where: p.user_id == ^scope.user.id,
-        preload: [program: p, exercises: [exercise_root: []]]
+        preload: [program: p, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]]
     )
   end
 
@@ -70,7 +70,7 @@ defmodule LiftskitBackend.Workouts do
       from w in Workout,
         join: p in assoc(w, :program),
         where: w.id == ^id and p.user_id == ^scope.user.id,
-        preload: [program: p, exercises: [exercise_root: []]]
+        preload: [program: p, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]]
     )
   end
 
@@ -91,11 +91,31 @@ defmodule LiftskitBackend.Workouts do
            %Workout{}
            |> Workout.changeset(attrs)
            |> Repo.insert() do
+
+      # Handle superset_exercises for all exercises in the workout
+      handle_superset_exercises(workout, attrs["exercises"] || [])
+
       # Preload exercises and program for JSON serialization
-      workout = Repo.preload(workout, [:program, exercises: [exercise_root: []]])
+      workout = Repo.preload(workout, [:program, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]])
       broadcast(scope, {:created, workout})
       {:ok, workout}
     end
+  end
+
+  # Handle superset_exercises for exercises in a workout
+  defp handle_superset_exercises(workout, exercises_data) do
+    Enum.each(exercises_data, fn exercise_data ->
+      if exercise_data["superset_exercises"] && length(exercise_data["superset_exercises"]) > 0 do
+        # Find the corresponding exercise in the workout
+        exercise = Enum.find(workout.exercises, fn e ->
+          e.exercise_root_id == exercise_data["exercise_root_id"]
+        end)
+
+        if exercise do
+          LiftskitBackend.Exercises.create_superset_exercises(exercise, exercise_data["superset_exercises"])
+        end
+      end
+    end)
   end
 
   @doc """
@@ -119,7 +139,7 @@ defmodule LiftskitBackend.Workouts do
            |> Workout.changeset(attrs)
            |> Repo.update() do
       # Preload exercises and program for JSON serialization
-      workout = Repo.preload(workout, [:program, exercises: [exercise_root: []]])
+      workout = Repo.preload(workout, [:program, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]])
       broadcast(scope, {:updated, workout})
       {:ok, workout}
     end

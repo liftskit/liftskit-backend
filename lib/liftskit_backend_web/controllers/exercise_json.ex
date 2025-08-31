@@ -32,7 +32,14 @@ defmodule LiftskitBackendWeb.ExerciseJSON do
   defp data(%Scope{} = scope, %Exercise{} = exercise) do
     exercise_root_id = exercise.exercise_root_id
     exercise_root = ExerciseRoots.get_exercise_root!(scope, exercise_root_id)
-    superset_exercises = Exercises.get_superset_exercises!(scope, exercise.id)
+
+    # Use preloaded superset_exercises if available, otherwise fetch them
+    superset_exercises = if exercise.superset_exercises do
+      exercise.superset_exercises
+    else
+      Exercises.get_superset_exercises!(scope, exercise.id)
+    end
+
     %{
       id: exercise.id,
       orm_percent: if(exercise.orm_percent, do: Decimal.to_string(exercise.orm_percent), else: nil),

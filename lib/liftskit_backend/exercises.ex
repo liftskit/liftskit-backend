@@ -42,7 +42,9 @@ defmodule LiftskitBackend.Exercises do
 
   """
   def list_exercises(%Scope{} = _scope) do
-    Repo.all(Exercise)
+    Exercise
+      |> Repo.all()
+      |> Repo.preload([:exercise_root, :superset_exercises])
   end
 
   @doc """
@@ -60,7 +62,9 @@ defmodule LiftskitBackend.Exercises do
 
   """
   def get_exercise!(%Scope{} = _scope, id) do
-    Repo.get!(Exercise, id)
+    Exercise
+      |> Repo.get!(id)
+      |> Repo.preload([:exercise_root, :superset_exercises])
   end
 
   @doc """
@@ -90,8 +94,9 @@ defmodule LiftskitBackend.Exercises do
         broadcast(scope, {:created, exercise})
 
         # Reload the exercise with associations to ensure superset relationships are loaded
-        exercise_with_associations = Repo.get!(Exercise, exercise.id)
-          |> Repo.preload([:exercise_supersets, :superset_exercises])
+        exercise_with_associations = Exercise
+          |> Repo.get!(exercise.id)
+          |> Repo.preload([:exercise_root, :superset_exercises])
 
         {:ok, exercise_with_associations}
       end
@@ -115,7 +120,13 @@ defmodule LiftskitBackend.Exercises do
              |> Exercise.changeset(attrs)
              |> Repo.update() do
         broadcast(scope, {:updated, exercise})
-      {:ok, exercise}
+
+        # Reload the exercise with associations
+        exercise_with_associations = Exercise
+          |> Repo.get!(exercise.id)
+          |> Repo.preload([:exercise_root, :superset_exercises])
+
+        {:ok, exercise_with_associations}
       end
   end
 
@@ -159,7 +170,7 @@ defmodule LiftskitBackend.Exercises do
       |> Map.get(:superset_exercises)
   end
 
-  defp create_superset_exercises(exercise, superset_ids) when is_list(superset_ids) do
+  def create_superset_exercises(exercise, superset_ids) when is_list(superset_ids) do
     superset_ids
       |> Enum.with_index()
       |> Enum.map(fn {superset_id, index} ->

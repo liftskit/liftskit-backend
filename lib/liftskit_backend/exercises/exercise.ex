@@ -30,4 +30,6 @@ defmodule LiftskitBackend.Exercises.Exercise do
     |> foreign_key_constraint(:workout_id)
     |> foreign_key_constraint(:exercise_root_id)
   end
+
+
 end
