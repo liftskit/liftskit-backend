@@ -41,7 +41,10 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def list_workouts_performed(%Scope{} = scope) do
-    Repo.all_by(WorkoutPerformed, userId: scope.user.id)
+    WorkoutPerformed
+    |> where(userId: ^scope.user.id)
+    |> preload(:exercisesPerformed)
+    |> Repo.all()
   end
 
   @doc """
@@ -59,7 +62,10 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def get_workout_performed!(%Scope{} = scope, id) do
-    Repo.get_by!(WorkoutPerformed, id: id, userId: scope.user.id)
+    WorkoutPerformed
+    |> where(id: ^id, userId: ^scope.user.id)
+    |> preload(:exercisesPerformed)
+    |> Repo.one!()
   end
 
   @doc """
@@ -75,9 +81,11 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
   """
   def create_workout_performed(%Scope{} = scope, attrs) do
+    attrs = Map.put(attrs, "userId", scope.user.id)
+
     with {:ok, workout_performed = %WorkoutPerformed{}} <-
            %WorkoutPerformed{}
-           |> WorkoutPerformed.changeset(attrs, scope)
+           |> WorkoutPerformed.changeset(attrs)
            |> Repo.insert() do
       broadcast(scope, {:created, workout_performed})
       {:ok, workout_performed}
@@ -101,7 +109,7 @@ defmodule LiftskitBackend.WorkoutsPerformed do
 
     with {:ok, workout_performed = %WorkoutPerformed{}} <-
            workout_performed
-           |> WorkoutPerformed.changeset(attrs, scope)
+           |> WorkoutPerformed.changeset(attrs)
            |> Repo.update() do
       broadcast(scope, {:updated, workout_performed})
       {:ok, workout_performed}
@@ -142,6 +150,6 @@ defmodule LiftskitBackend.WorkoutsPerformed do
   def change_workout_performed(%Scope{} = scope, %WorkoutPerformed{} = workout_performed, attrs \\ %{}) do
     true = workout_performed.userId == scope.user.id
 
-    WorkoutPerformed.changeset(workout_performed, attrs, scope)
+    WorkoutPerformed.changeset(workout_performed, attrs)
   end
 end

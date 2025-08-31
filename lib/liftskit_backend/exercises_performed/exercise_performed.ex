@@ -20,5 +20,6 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
     exercise_performed
     |> cast(attrs, [:_type, :name, :reps, :sets, :time, :weight])
     |> validate_required([:_type, :name, :reps, :sets, :time, :weight])
+    |> foreign_key_constraint(:workoutPerformedId)
   end
 end

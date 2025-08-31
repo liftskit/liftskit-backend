@@ -17,8 +17,8 @@ defmodule LiftskitBackend.WorkoutsPerformed.WorkoutPerformed do
   @doc false
   def changeset(workout_performed, attrs) do
     workout_performed
-    |> cast(attrs, [:programName, :workoutDate, :workoutTime, :workoutName])
-    |> validate_required([:programName, :workoutDate, :workoutTime, :workoutName])
+    |> cast(attrs, [:programName, :workoutDate, :workoutTime, :workoutName, :userId])
+    |> validate_required([:programName, :workoutDate, :workoutTime, :workoutName, :userId])
     |> foreign_key_constraint(:userId)
     |> cast_assoc(:exercisesPerformed, with: &LiftskitBackend.ExercisesPerformed.ExercisePerformed.changeset/2)
     |> validate_exercises_present()

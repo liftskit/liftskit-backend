@@ -75,13 +75,13 @@ defmodule LiftskitBackend.Exercises do
 
   """
   def create_exercise(%Scope{} = scope, attrs) do
-    with {:ok, exercise = %Exercise{}} <-
-           %Exercise{}
-           |> Exercise.changeset(attrs)
-           |> Repo.insert() do
-      broadcast(scope, {:created, exercise})
+      with {:ok, exercise = %Exercise{}} <-
+             %Exercise{}
+             |> Exercise.changeset(attrs)
+             |> Repo.insert() do
+        broadcast(scope, {:created, exercise})
       {:ok, exercise}
-    end
+      end
   end
 
   @doc """
@@ -97,13 +97,13 @@ defmodule LiftskitBackend.Exercises do
 
   """
   def update_exercise(%Scope{} = scope, %Exercise{} = exercise, attrs) do
-    with {:ok, exercise = %Exercise{}} <-
-           exercise
-           |> Exercise.changeset(attrs)
-           |> Repo.update() do
-      broadcast(scope, {:updated, exercise})
+      with {:ok, exercise = %Exercise{}} <-
+             exercise
+             |> Exercise.changeset(attrs)
+             |> Repo.update() do
+        broadcast(scope, {:updated, exercise})
       {:ok, exercise}
-    end
+      end
   end
 
   @doc """

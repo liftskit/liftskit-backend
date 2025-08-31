@@ -75,11 +75,11 @@ defmodule LiftskitBackend.Programs do
 
   """
   def create_program(%Scope{} = scope, attrs) do
-    attrs_with_user = attrs |> Map.put("userId", scope.user.id)
+    attrs = Map.put(attrs, "userId", scope.user.id)
 
     with {:ok, program = %Program{}} <-
            %Program{}
-           |> Program.changeset(attrs_with_user)
+           |> Program.changeset(attrs)
            |> Repo.insert() do
       broadcast(scope, {:created, program})
       {:ok, program}

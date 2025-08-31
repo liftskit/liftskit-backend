@@ -40,8 +40,8 @@ defmodule LiftskitBackend.ExercisesPerformed do
       [%ExercisePerformed{}, ...]
 
   """
-  def list_exercise_performed(%Scope{} = scope) do
-    Repo.all_by(ExercisePerformed, userId: scope.user.id)
+  def list_exercise_performed(%Scope{} = _scope) do
+    Repo.all(ExercisePerformed)
   end
 
   @doc """
@@ -58,8 +58,8 @@ defmodule LiftskitBackend.ExercisesPerformed do
       ** (Ecto.NoResultsError)
 
   """
-  def get_exercise_performed!(%Scope{} = scope, id) do
-    Repo.get_by!(ExercisePerformed, id: id, userId: scope.user.id)
+  def get_exercise_performed!(%Scope{} = _scope, id) do
+    Repo.get_by!(ExercisePerformed, id: id)
   end
 
   @doc """
@@ -97,8 +97,6 @@ defmodule LiftskitBackend.ExercisesPerformed do
 
   """
   def update_exercise_performed(%Scope{} = scope, %ExercisePerformed{} = exercise_performed, attrs) do
-    true = exercise_performed.userId == scope.user.id
-
     with {:ok, exercise_performed = %ExercisePerformed{}} <-
            exercise_performed
            |> ExercisePerformed.changeset(attrs)
@@ -121,8 +119,6 @@ defmodule LiftskitBackend.ExercisesPerformed do
 
   """
   def delete_exercise_performed(%Scope{} = scope, %ExercisePerformed{} = exercise_performed) do
-    true = exercise_performed.userId == scope.user.id
-
     with {:ok, exercise_performed = %ExercisePerformed{}} <-
            Repo.delete(exercise_performed) do
       broadcast(scope, {:deleted, exercise_performed})
@@ -140,8 +136,6 @@ defmodule LiftskitBackend.ExercisesPerformed do
 
   """
   def change_exercise_performed(%Scope{} = scope, %ExercisePerformed{} = exercise_performed, attrs \\ %{}) do
-    true = exercise_performed.userId == scope.user.id
-
     ExercisePerformed.changeset(exercise_performed, attrs)
   end
 end
