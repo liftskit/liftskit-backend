@@ -7,6 +7,7 @@ defmodule LiftskitBackend.ExercisesPerformed do
   alias LiftskitBackend.Repo
 
   alias LiftskitBackend.ExercisesPerformed.ExercisePerformed
+  alias LiftskitBackend.ExercisesPerformed.ExercisePerformedSuperset
   alias LiftskitBackend.Accounts.Scope
 
   @doc """
@@ -41,7 +42,9 @@ defmodule LiftskitBackend.ExercisesPerformed do
 
   """
   def list_exercise_performed(%Scope{} = _scope) do
-    Repo.all(ExercisePerformed)
+    ExercisePerformed
+    |> Repo.all()
+    |> Repo.preload([:superset_exercises])
   end
 
   @doc """
@@ -59,7 +62,9 @@ defmodule LiftskitBackend.ExercisesPerformed do
 
   """
   def get_exercise_performed!(%Scope{} = _scope, id) do
-    Repo.get_by!(ExercisePerformed, id: id)
+    ExercisePerformed
+    |> Repo.get_by!(id: id)
+    |> Repo.preload([:superset_exercises])
   end
 
   @doc """
@@ -79,8 +84,22 @@ defmodule LiftskitBackend.ExercisesPerformed do
            %ExercisePerformed{}
            |> ExercisePerformed.changeset(attrs)
            |> Repo.insert() do
+      # Handle superset exercises if provided
+      superset_exercises = attrs["superset_exercises"]
+
+      if superset_exercises do
+        create_superset_exercises(exercise_performed, superset_exercises)
+      end
+
       broadcast(scope, {:created, exercise_performed})
-      {:ok, exercise_performed}
+
+      # Reload the exercise_performed with associations to ensure superset relationships are loaded
+      exercise_performed_with_associations =
+        ExercisePerformed
+        |> Repo.get!(exercise_performed.id)
+        |> Repo.preload([:superset_exercises])
+
+      {:ok, exercise_performed_with_associations}
     end
   end
 
@@ -96,7 +115,11 @@ defmodule LiftskitBackend.ExercisesPerformed do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_exercise_performed(%Scope{} = scope, %ExercisePerformed{} = exercise_performed, attrs) do
+  def update_exercise_performed(
+        %Scope{} = scope,
+        %ExercisePerformed{} = exercise_performed,
+        attrs
+      ) do
     with {:ok, exercise_performed = %ExercisePerformed{}} <-
            exercise_performed
            |> ExercisePerformed.changeset(attrs)
@@ -135,7 +158,41 @@ defmodule LiftskitBackend.ExercisesPerformed do
       %Ecto.Changeset{data: %ExercisePerformed{}}
 
   """
-  def change_exercise_performed(%Scope{} = scope, %ExercisePerformed{} = exercise_performed, attrs \\ %{}) do
+  def change_exercise_performed(
+        %Scope{} = _scope,
+        %ExercisePerformed{} = exercise_performed,
+        attrs \\ %{}
+      ) do
     ExercisePerformed.changeset(exercise_performed, attrs)
+  end
+
+  def create_superset_exercises(exercise, superset_ids) when is_list(superset_ids) do
+    superset_ids
+    |> Enum.with_index()
+    |> Enum.map(fn {superset_id, index} ->
+      %ExercisePerformedSuperset{}
+      |> ExercisePerformedSuperset.changeset(%{
+        exercise_performed_id: exercise.id,
+        superset_exercise_id: superset_id,
+        order: index
+      })
+      |> Repo.insert()
+    end)
+  end
+
+  @doc """
+  Gets superset exercises for a given exercise_performed.
+
+  ## Examples
+
+      iex> get_superset_exercises!(exercise_performed_id)
+      [%ExercisePerformed{}, ...]
+
+  """
+  def get_superset_exercises!(exercise_performed_id) do
+    ExercisePerformed
+    |> Repo.get_by!(id: exercise_performed_id)
+    |> Repo.preload([:superset_exercises])
+    |> Map.get(:superset_exercises)
   end
 end

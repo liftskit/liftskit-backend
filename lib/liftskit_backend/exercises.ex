@@ -43,8 +43,8 @@ defmodule LiftskitBackend.Exercises do
   """
   def list_exercises(%Scope{} = _scope) do
     Exercise
-      |> Repo.all()
-      |> Repo.preload([:exercise_root, :superset_exercises])
+    |> Repo.all()
+    |> Repo.preload([:exercise_root, :superset_exercises])
   end
 
   @doc """
@@ -63,8 +63,8 @@ defmodule LiftskitBackend.Exercises do
   """
   def get_exercise!(%Scope{} = _scope, id) do
     Exercise
-      |> Repo.get!(id)
-      |> Repo.preload([:exercise_root, :superset_exercises])
+    |> Repo.get!(id)
+    |> Repo.preload([:exercise_root, :superset_exercises])
   end
 
   @doc """
@@ -80,26 +80,27 @@ defmodule LiftskitBackend.Exercises do
 
   """
   def create_exercise(%Scope{} = scope, attrs) do
-      with {:ok, exercise = %Exercise{}} <-
-             %Exercise{}
-             |> Exercise.changeset(attrs)
-             |> Repo.insert() do
+    with {:ok, exercise = %Exercise{}} <-
+           %Exercise{}
+           |> Exercise.changeset(attrs)
+           |> Repo.insert() do
+      # Handle superset exercises if provided
+      superset_exercises = attrs["superset_exercises"]
 
-        # Handle superset exercises if provided (support both camelCase and snake_case)
-        superset_exercises = attrs["superset_exercises"]
-        if superset_exercises do
-          create_superset_exercises(exercise, superset_exercises)
-        end
-
-        broadcast(scope, {:created, exercise})
-
-        # Reload the exercise with associations to ensure superset relationships are loaded
-        exercise_with_associations = Exercise
-          |> Repo.get!(exercise.id)
-          |> Repo.preload([:exercise_root, :superset_exercises])
-
-        {:ok, exercise_with_associations}
+      if superset_exercises do
+        create_superset_exercises(exercise, superset_exercises)
       end
+
+      broadcast(scope, {:created, exercise})
+
+      # Reload the exercise with associations to ensure superset relationships are loaded
+      exercise_with_associations =
+        Exercise
+        |> Repo.get!(exercise.id)
+        |> Repo.preload([:exercise_root, :superset_exercises])
+
+      {:ok, exercise_with_associations}
+    end
   end
 
   @doc """
@@ -115,19 +116,20 @@ defmodule LiftskitBackend.Exercises do
 
   """
   def update_exercise(%Scope{} = scope, %Exercise{} = exercise, attrs) do
-      with {:ok, exercise = %Exercise{}} <-
-             exercise
-             |> Exercise.changeset(attrs)
-             |> Repo.update() do
-        broadcast(scope, {:updated, exercise})
+    with {:ok, exercise = %Exercise{}} <-
+           exercise
+           |> Exercise.changeset(attrs)
+           |> Repo.update() do
+      broadcast(scope, {:updated, exercise})
 
-        # Reload the exercise with associations
-        exercise_with_associations = Exercise
-          |> Repo.get!(exercise.id)
-          |> Repo.preload([:exercise_root, :superset_exercises])
+      # Reload the exercise with associations
+      exercise_with_associations =
+        Exercise
+        |> Repo.get!(exercise.id)
+        |> Repo.preload([:exercise_root, :superset_exercises])
 
-        {:ok, exercise_with_associations}
-      end
+      {:ok, exercise_with_associations}
+    end
   end
 
   @doc """
@@ -163,24 +165,24 @@ defmodule LiftskitBackend.Exercises do
     Exercise.changeset(exercise, attrs)
   end
 
-    def get_superset_exercises!(%Scope{} = _scope, exercise_id) do
+  def get_superset_exercises!(%Scope{} = _scope, exercise_id) do
     Exercise
-      |> Repo.get!(exercise_id)
-      |> Repo.preload([:exercise_supersets, :superset_exercises])
-      |> Map.get(:superset_exercises)
+    |> Repo.get!(exercise_id)
+    |> Repo.preload([:exercise_supersets, :superset_exercises])
+    |> Map.get(:superset_exercises)
   end
 
   def create_superset_exercises(exercise, superset_ids) when is_list(superset_ids) do
     superset_ids
-      |> Enum.with_index()
-      |> Enum.map(fn {superset_id, index} ->
-        %ExerciseSuperset{}
-          |> ExerciseSuperset.changeset(%{
-            exercise_id: exercise.id,
-            superset_exercise_id: superset_id,
-            order: index
-          })
-          |> Repo.insert!()
-      end)
+    |> Enum.with_index()
+    |> Enum.map(fn {superset_id, index} ->
+      %ExerciseSuperset{}
+      |> ExerciseSuperset.changeset(%{
+        exercise_id: exercise.id,
+        superset_exercise_id: superset_id,
+        order: index
+      })
+      |> Repo.insert!()
+    end)
   end
 end
