@@ -135,7 +135,7 @@ defmodule LiftskitBackend.ExerciseRoots do
       %Ecto.Changeset{data: %ExerciseRoot{}}
 
   """
-  def change_exercise_root(%Scope{} = scope, %ExerciseRoot{} = exercise_root, attrs \\ %{}) do
+  def change_exercise_root(%Scope{} = _scope, %ExerciseRoot{} = exercise_root, attrs \\ %{}) do
     ExerciseRoot.changeset(exercise_root, attrs)
   end
 end
