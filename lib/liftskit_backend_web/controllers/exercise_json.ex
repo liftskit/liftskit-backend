@@ -33,12 +33,7 @@ defmodule LiftskitBackendWeb.ExerciseJSON do
     exercise_root_id = exercise.exercise_root_id
     exercise_root = ExerciseRoots.get_exercise_root!(scope, exercise_root_id)
 
-    # Use preloaded superset_exercises if available, otherwise fetch them
-    superset_exercises = if exercise.superset_exercises do
-      exercise.superset_exercises
-    else
-      Exercises.get_superset_exercises!(scope, exercise.id)
-    end
+    superset_exercises = exercise.superset_exercises
 
     %{
       id: exercise.id,
@@ -53,7 +48,7 @@ defmodule LiftskitBackendWeb.ExerciseJSON do
         name: exercise_root.name,
         type: exercise_root._type
       },
-      superset_exercises: for(superset_exercise <- superset_exercises, do: superset_exercise_data(scope, superset_exercise))
+      superset_exercises: (superset_exercises || []) |> Enum.map(&superset_exercise_data(scope, &1))
     }
   end
 
