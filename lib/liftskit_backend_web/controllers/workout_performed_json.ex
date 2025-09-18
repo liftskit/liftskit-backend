@@ -27,6 +27,12 @@ defmodule LiftskitBackendWeb.WorkoutPerformedJSON do
   end
 
   defp exercise_data(exercise_performed) do
+    superset_exercises = case exercise_performed.superset_exercises do
+      %Ecto.Association.NotLoaded{} -> []
+      superset_exercises when is_list(superset_exercises) -> superset_exercises
+      _ -> []
+    end
+
     %{
       id: exercise_performed.id,
       _type: exercise_performed._type,
@@ -34,7 +40,22 @@ defmodule LiftskitBackendWeb.WorkoutPerformedJSON do
       reps: exercise_performed.reps,
       sets: exercise_performed.sets,
       time: exercise_performed.time,
-      weight: exercise_performed.weight
+      weight: exercise_performed.weight,
+      is_superset: exercise_performed.is_superset,
+      superset_exercises: superset_exercises |> Enum.map(&superset_exercise_data/1)
+    }
+  end
+
+  defp superset_exercise_data(superset_exercise) do
+    %{
+      id: superset_exercise.id,
+      _type: superset_exercise._type,
+      name: superset_exercise.name,
+      reps: superset_exercise.reps,
+      sets: superset_exercise.sets,
+      time: superset_exercise.time,
+      weight: superset_exercise.weight,
+      is_superset: superset_exercise.is_superset
     }
   end
 end

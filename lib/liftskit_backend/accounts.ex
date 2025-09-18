@@ -4,6 +4,7 @@ defmodule LiftskitBackend.Accounts do
   """
 
   import Ecto.Query, warn: false
+  import Ecto.Changeset
   alias LiftskitBackend.Repo
 
   alias LiftskitBackend.Accounts.{User, UserToken, UserNotifier}
@@ -115,7 +116,36 @@ defmodule LiftskitBackend.Accounts do
 
   """
   def change_user_email(user, attrs \\ %{}, opts \\ []) do
-    User.email_changeset(user, attrs, opts)
+    user
+    |> cast(attrs, [:email])
+    |> validate_email(opts)
+  end
+
+  defp validate_email(changeset, opts) do
+    changeset =
+      changeset
+      |> validate_required([:email])
+      |> validate_format(:email, ~r/^[^@,;\s]+@[^@,;\s]+$/,
+        message: "must have the @ sign and no spaces"
+      )
+      |> validate_length(:email, max: 160)
+
+    if Keyword.get(opts, :validate_unique, true) do
+      changeset
+      |> unsafe_validate_unique(:email, LiftskitBackend.Repo)
+      |> unique_constraint(:email)
+      |> validate_email_changed()
+    else
+      changeset
+    end
+  end
+
+  defp validate_email_changed(changeset) do
+    if get_field(changeset, :email) && get_change(changeset, :email) == nil do
+      add_error(changeset, :email, "did not change")
+    else
+      changeset
+    end
   end
 
   @doc """
@@ -129,7 +159,7 @@ defmodule LiftskitBackend.Accounts do
     Repo.transact(fn ->
       with {:ok, query} <- UserToken.verify_change_email_token_query(token, context),
            %UserToken{sent_to: email} <- Repo.one(query),
-           {:ok, user} <- Repo.update(User.email_changeset(user, %{email: email})),
+           {:ok, user} <- Repo.update(change_user_email(user, %{email: email})),
            {_count, _result} <-
              Repo.delete_all(from(UserToken, where: [user_id: ^user.id, context: ^context])) do
         {:ok, user}

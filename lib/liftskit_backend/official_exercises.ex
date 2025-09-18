@@ -140,8 +140,6 @@ defmodule LiftskitBackend.OfficialExercises do
 
   """
   def change_official_exercise(%Scope{} = scope, %OfficialExercise{} = official_exercise, attrs \\ %{}) do
-    true = official_exercise.user_id == scope.user.id
-
-    OfficialExercise.changeset(official_exercise, attrs, scope)
+    OfficialExercise.changeset(official_exercise, attrs)
   end
 end

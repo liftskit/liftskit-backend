@@ -9,6 +9,7 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
     field :sets, :integer
     field :time, :integer
     field :weight, :integer
+    field :is_superset, :boolean, default: false
 
     belongs_to :workout_performed, LiftskitBackend.WorkoutsPerformed.WorkoutPerformed, foreign_key: :workout_performed_id
 
@@ -22,7 +23,7 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
   @doc false
   def changeset(exercise_performed, attrs) do
     exercise_performed
-    |> cast(attrs, [:_type, :name, :reps, :sets, :time, :weight, :workout_performed_id])
+    |> cast(attrs, [:_type, :name, :reps, :sets, :time, :weight, :workout_performed_id, :is_superset])
     |> validate_required([:_type, :name, :reps, :sets, :time, :weight])
     |> foreign_key_constraint(:workout_performed_id)
   end

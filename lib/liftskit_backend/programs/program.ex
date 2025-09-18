@@ -4,7 +4,6 @@ defmodule LiftskitBackend.Programs.Program do
 
   schema "programs" do
     field :name, :string
-    field :description, :string
 
     # Use snake_case field name that matches the database column
     belongs_to :user, LiftskitBackend.Accounts.User, foreign_key: :user_id
@@ -16,8 +15,8 @@ defmodule LiftskitBackend.Programs.Program do
   @doc false
   def changeset(program, attrs) do
     program
-    |> cast(attrs, [:name, :description, :user_id])
-    |> validate_required([:name, :description, :user_id])
+    |> cast(attrs, [:name, :user_id])
+    |> validate_required([:name, :user_id])
     |> unique_constraint(:name)
     |> foreign_key_constraint(:user_id)
   end

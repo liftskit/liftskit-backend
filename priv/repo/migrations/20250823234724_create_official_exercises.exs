@@ -8,8 +8,6 @@ defmodule LiftskitBackend.Repo.Migrations.CreateOfficialExercises do
       timestamps(type: :utc_datetime)
     end
 
-    create index(:official_exercises, [:user_id])
-
     create unique_index(:official_exercises, [:name])
   end
 end

@@ -49,7 +49,7 @@ defmodule LiftskitBackendWeb.Router do
 
     ## Admin
     resources "/official_exercises", OfficialExerciseController, only: [:index, :create, :delete]
-    resources "/one_rep_maxes", OneRepMaxController, only: [:index, :create, :delete, :show, :update]
+    resources "/one_rep_max", OneRepMaxController, only: [:index, :create, :delete, :show, :update]
 
     ## Workouts
     resources "/exercise_roots", ExerciseRootController, only: [:index, :create, :delete]
@@ -58,7 +58,7 @@ defmodule LiftskitBackendWeb.Router do
     resources "/workouts", WorkoutController, only: [:index, :create, :delete, :show, :update]
 
     ## Workout performed
-    resources "/exercises_performed", ExercisePerformedController, only: [:index, :create, :delete, :show, :update]
+    resources "/exercise_performed", ExercisePerformedController, only: [:index, :create, :delete, :show, :update]
     resources "/workouts_performed", WorkoutPerformedController, only: [:index, :create, :delete, :show, :update]
 
     ## Other

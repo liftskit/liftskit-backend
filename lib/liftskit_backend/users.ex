@@ -47,7 +47,7 @@ defmodule LiftskitBackend.Users do
       [%User{}, ...]
 
   """
-  def search_users_by_username(%Scope{} = scope, username_query) do
+  def search_users_by_username(%Scope{} = _scope, username_query) do
     query = from u in User,
       where: ilike(u.username, ^"%#{username_query}%")
       # where: u.user_id == ^scope.user.id

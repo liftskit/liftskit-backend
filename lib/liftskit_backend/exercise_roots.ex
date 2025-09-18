@@ -127,6 +127,26 @@ defmodule LiftskitBackend.ExerciseRoots do
   end
 
   @doc """
+  Finds an exercise root by name and type, or creates one if it doesn't exist.
+
+  ## Examples
+
+      iex> find_or_create_exercise_root(scope, "Push-ups", :Bodyweight)
+      {:ok, %ExerciseRoot{}}
+
+  """
+  def find_or_create_exercise_root(%Scope{} = scope, name, type) do
+    # First try to find an existing exercise root
+    case Repo.get_by(ExerciseRoot, name: name, _type: type) do
+      nil ->
+        # Create a new exercise root if it doesn't exist
+        create_exercise_root(scope, %{"name" => name, "_type" => type})
+      exercise_root ->
+        {:ok, exercise_root}
+    end
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking exercise_root changes.
 
   ## Examples

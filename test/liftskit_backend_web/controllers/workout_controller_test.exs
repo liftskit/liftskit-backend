@@ -33,6 +33,85 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
       }
     ]
   }
+  @create_with_superset_attrs %{
+    name: "Superset Test",
+    bestWorkoutTime: "10:00",
+    exercises: [
+      %{
+        exercise_root_id: 2,
+        time: "0.00",
+        sets: 5,
+        reps: 5,
+        orm_percent: 0,
+        weight: 135,
+        is_superset: true,
+        superset_exercises: [
+          %{
+            exercise_root_id: 2,
+            time: "0.00",
+            sets: 5,
+            reps: 5,
+            orm_percent: 0,
+            weight: 135,
+            is_superset: false
+          }
+        ]
+      },
+      %{
+        exercise_root_id: 2,
+        time: "0.00",
+        sets: 5,
+        reps: 5,
+        orm_percent: 0,
+        weight: 225,
+        is_superset: false
+      }
+    ]
+  }
+  @create_with_exercise_root_object_attrs %{
+    name: "Exercise Root Object Test",
+    bestWorkoutTime: "15:00",
+    exercises: [
+      %{
+        exercise_root: %{
+          name: "Push-ups",
+          _type: "Bodyweight"
+        },
+        orm_percent: 0,
+        reps: 15,
+        sets: 3,
+        time: "0",
+        weight: 0,
+        is_superset: false
+      },
+      %{
+        exercise_root: %{
+          name: "Bench Press",
+          _type: "Strength"
+        },
+        orm_percent: 85.0,
+        reps: 8,
+        sets: 4,
+        time: "2:00",
+        weight: 185,
+        is_superset: true,
+        superset_exercises: [
+          %{
+            exercise_root: %{
+              name: "Dumbbell Flyes",
+              _type: "Strength"
+            },
+            orm_percent: 70.0,
+            reps: 12,
+            sets: 4,
+            time: "1:30",
+            weight: 30,
+            is_superset: false
+          }
+        ]
+      }
+    ]
+  }
   @update_attrs %{
     name: "some updated name",
     bestWorkoutTime: "some updated bestWorkoutTime"
@@ -103,6 +182,55 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
       assert second_exercise["sets"] == 4
       assert second_exercise["weight"] == 95
       assert second_exercise["isSuperset"] == true
+    end
+
+    test "renders workout with exercise_root object format", %{conn: conn} do
+      # Create a program first
+      program = program_fixture(conn.assigns.current_scope)
+      attrs = Map.put(@create_with_exercise_root_object_attrs, :programId, program.id)
+
+      conn = post(conn, ~p"/api/workouts", workout: attrs)
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      conn = get(conn, ~p"/api/workouts/#{id}")
+      response = json_response(conn, 200)["data"]
+
+      assert %{
+               "id" => ^id,
+               "bestWorkoutTime" => "15:00",
+               "name" => "Exercise Root Object Test",
+               "exercises" => exercises
+             } = response
+
+      assert length(exercises) == 2
+
+      # Check first exercise (Push-ups)
+      [first_exercise | _] = exercises
+      assert first_exercise["reps"] == 15
+      assert first_exercise["sets"] == 3
+      assert first_exercise["weight"] == 0
+      assert first_exercise["isSuperset"] == false
+      assert first_exercise["exerciseRoot"]["name"] == "Push-ups"
+      assert first_exercise["exerciseRoot"]["_type"] == "Bodyweight"
+
+      # Check second exercise (Bench Press with superset)
+      [_, second_exercise | _] = exercises
+      assert second_exercise["reps"] == 8
+      assert second_exercise["sets"] == 4
+      assert second_exercise["weight"] == 185
+      assert second_exercise["isSuperset"] == true
+      assert second_exercise["exerciseRoot"]["name"] == "Bench Press"
+      assert second_exercise["exerciseRoot"]["_type"] == "Strength"
+
+      # Check superset exercise
+      superset_exercises = second_exercise["supersetExercises"]
+      assert length(superset_exercises) == 1
+      [superset_exercise] = superset_exercises
+      assert superset_exercise["reps"] == 12
+      assert superset_exercise["sets"] == 4
+      assert superset_exercise["weight"] == 30
+      assert superset_exercise["exerciseRoot"]["name"] == "Dumbbell Flyes"
+      assert superset_exercise["exerciseRoot"]["_type"] == "Strength"
     end
 
     test "renders errors when data is invalid", %{conn: conn} do

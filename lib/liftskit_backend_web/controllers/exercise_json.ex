@@ -2,7 +2,6 @@ defmodule LiftskitBackendWeb.ExerciseJSON do
   alias LiftskitBackend.Exercises.Exercise
   alias LiftskitBackend.ExerciseRoots
   alias LiftskitBackend.Accounts.Scope
-  alias LiftskitBackend.Exercises
   alias Decimal
 
   @doc """

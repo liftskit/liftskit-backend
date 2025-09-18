@@ -28,7 +28,7 @@ defmodule LiftskitBackendWeb.WorkoutJSON do
   defp exercise_data(exercise) do
     %{
       id: exercise.id,
-      orm_percent: exercise.orm_percent,
+      orm_percent: Decimal.to_float(exercise.orm_percent),
       reps: exercise.reps,
       sets: exercise.sets,
       time: exercise.time,
@@ -51,7 +51,7 @@ defmodule LiftskitBackendWeb.WorkoutJSON do
   defp superset_exercise_data(superset_exercise) do
     %{
       id: superset_exercise.id,
-      orm_percent: superset_exercise.orm_percent,
+      orm_percent: Decimal.to_float(superset_exercise.orm_percent),
       reps: superset_exercise.reps,
       sets: superset_exercise.sets,
       time: superset_exercise.time,

@@ -25,8 +25,9 @@ defmodule LiftskitBackendWeb.WorkoutPerformedController do
     render(conn, :show, workout_performed: workout_performed)
   end
 
-  def update(conn, %{"id" => id, "workout_performed" => workout_performed_params}) do
+  def update(conn, %{"id" => id} = params) do
     workout_performed = WorkoutsPerformed.get_workout_performed!(conn.assigns.current_scope, id)
+    workout_performed_params = Map.delete(params, "id")
 
     with {:ok, %WorkoutPerformed{} = workout_performed} <- WorkoutsPerformed.update_workout_performed(conn.assigns.current_scope, workout_performed, workout_performed_params) do
       render(conn, :show, workout_performed: workout_performed)

@@ -75,7 +75,7 @@ defmodule LiftskitBackend.Programs do
 
   """
   def create_program(%Scope{} = scope, attrs) do
-    attrs = Map.put(attrs, "user_id", scope.user.id)
+    attrs = Map.put(attrs, :user_id, scope.user.id)
 
     with {:ok, program = %Program{}} <-
            %Program{}
@@ -145,5 +145,33 @@ defmodule LiftskitBackend.Programs do
     true = program.user_id == scope.user.id
 
     Program.changeset(program, attrs)
+  end
+
+  def get_program_by_name(%Scope{} = scope, name) do
+    Repo.get_by(Program, name: name, user_id: scope.user.id)
+  end
+
+  @doc """
+  Checks if a program has only one workout remaining.
+  This is useful for determining if the program should be deleted when its last workout is removed.
+
+  ## Examples
+
+      iex> has_only_one_workout?(scope, program_id)
+      true
+
+      iex> has_only_one_workout?(scope, program_id)
+      false
+
+  """
+  def has_only_one_workout?(%Scope{} = scope, program_id) do
+    count = Repo.one(
+      from w in LiftskitBackend.Workouts.Workout,
+        join: p in assoc(w, :program),
+        where: w.program_id == ^program_id and p.user_id == ^scope.user.id,
+        select: count(w.id)
+    )
+
+    count == 1
   end
 end

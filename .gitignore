@@ -35,3 +35,14 @@ liftskit_backend-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Ignore db-config.sh
+db-config.sh
+
+# Ignore switch-to-local.sh
+switch-to-local.sh
+
+# Ignore switch-to-production.sh
+switch-to-production.sh
+
+# Ignore edit-db-config.sh
+edit-db-config.sh

@@ -7,6 +7,9 @@ defmodule LiftskitBackend.Application do
 
   @impl true
   def start(_type, _args) do
+    # Load JSON encoders
+    LiftskitBackend.JsonEncoders
+
     children = [
       LiftskitBackendWeb.Telemetry,
       LiftskitBackend.Repo,
@@ -33,9 +36,4 @@ defmodule LiftskitBackend.Application do
     :ok
   end
 
-  defimpl Jason.Encoder, for: Decimal do
-    def encode(decimal, opts) do
-      Jason.Encoder.encode(Decimal.to_string(decimal), opts)
-    end
-  end
 end

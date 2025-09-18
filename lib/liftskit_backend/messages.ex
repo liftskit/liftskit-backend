@@ -137,7 +137,7 @@ defmodule LiftskitBackend.Messages do
 
   """
   def update_message(%Scope{} = scope, %Message{} = message, attrs) do
-    true = message.user_id == scope.user.id
+    true = message.from_user_id == scope.user.id
 
     with {:ok, message = %Message{}} <-
            message
@@ -180,7 +180,7 @@ defmodule LiftskitBackend.Messages do
 
   """
   def change_message(%Scope{} = scope, %Message{} = message, attrs \\ %{}) do
-    true = message.user_id == scope.user.id
+    true = message.from_user_id == scope.user.id
 
     Message.changeset(message, attrs, scope)
   end

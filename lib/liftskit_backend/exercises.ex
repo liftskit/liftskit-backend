@@ -88,7 +88,7 @@ defmodule LiftskitBackend.Exercises do
       superset_exercises = attrs["superset_exercises"]
 
       if superset_exercises do
-        create_superset_exercises(exercise, superset_exercises)
+        create_superset_exercises(exercise, superset_exercises, scope)
       end
 
       broadcast(scope, {:created, exercise})
@@ -172,17 +172,51 @@ defmodule LiftskitBackend.Exercises do
     |> Map.get(:superset_exercises)
   end
 
-  def create_superset_exercises(exercise, superset_ids) when is_list(superset_ids) do
-    superset_ids
+  def create_superset_exercises(exercise, superset_data, scope) when is_list(superset_data) do
+
+    superset_data
     |> Enum.with_index()
-    |> Enum.map(fn {superset_id, index} ->
+    |> Enum.map(fn {superset_exercise_data, index} ->
+      # Process the superset exercise data to handle exercise_root lookup/creation
+      processed_superset_data = process_superset_exercise_data(scope, superset_exercise_data)
+
+      # Create the superset exercise first
+      superset_exercise_attrs = Map.put(processed_superset_data, "workout_id", exercise.workout_id)
+
+      {:ok, superset_exercise} =
+        %Exercise{}
+        |> Exercise.changeset(superset_exercise_attrs)
+        |> Repo.insert()
+
+      # Create the superset relationship
       %ExerciseSuperset{}
       |> ExerciseSuperset.changeset(%{
         exercise_id: exercise.id,
-        superset_exercise_id: superset_id,
+        superset_exercise_id: superset_exercise.id,
         order: index
       })
       |> Repo.insert!()
     end)
+  end
+
+  # Process superset exercise data to handle exercise_root lookup/creation
+  defp process_superset_exercise_data(scope, exercise_data) do
+    case exercise_data do
+      %{"exercise_root" => %{"name" => name, "_type" => type}} ->
+        # Handle new format with exercise_root object
+        with {:ok, exercise_root} <- LiftskitBackend.ExerciseRoots.find_or_create_exercise_root(scope, name, String.to_atom(type)) do
+          # Replace exercise_root object with exercise_root_id
+          exercise_data
+          |> Map.delete("exercise_root")
+          |> Map.put("exercise_root_id", exercise_root.id)
+        else
+          {:error, _changeset} ->
+            # If exercise root creation fails, return the original data
+            exercise_data
+        end
+      _ ->
+        # Handle existing format with exercise_root_id
+        exercise_data
+    end
   end
 end

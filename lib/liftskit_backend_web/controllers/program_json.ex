@@ -18,8 +18,7 @@ defmodule LiftskitBackendWeb.ProgramJSON do
   defp data(%Program{} = program) do
     %{
       id: program.id,
-      name: program.name,
-      description: program.description
+      name: program.name
     }
   end
 end

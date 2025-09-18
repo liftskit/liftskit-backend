@@ -98,17 +98,17 @@ defmodule LiftskitBackendWeb.UserSessionController do
             })
         end
 
-        %{"email" => email} when is_valid_email(email) ->
-          IO.puts("Password is required for mobile signin")
-          conn
-          |> put_status(:bad_request)
-          |> json(%{error: "Password is required for mobile signin"})
+      %{"email" => email} when is_valid_email(email) ->
+        IO.puts("Password is required for mobile signin")
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Password is required for mobile signin"})
 
-        _ ->
-          IO.puts("Email and password are required")
-          conn
-          |> put_status(:bad_request)
-          |> json(%{error: "Email and password are required"})
+      _ ->
+        IO.puts("Email and password are required")
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Email and password are required"})
     end
   end
 
@@ -143,16 +143,16 @@ defmodule LiftskitBackendWeb.UserSessionController do
               |> json(%{error: "Registration failed", details: format_changeset_errors(changeset)})
           end
 
-          %{"password" => password, "password_confirmation" => password_confirmation} when not passwords_match(password, password_confirmation) ->
-            IO.puts("Passwords do not match")
-            conn
-            |> put_status(:bad_request)
-            |> json(%{error: "Passwords do not match"})
+      %{"password" => password, "password_confirmation" => password_confirmation} when not passwords_match(password, password_confirmation) ->
+        IO.puts("Passwords do not match")
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Passwords do not match"})
 
-          _ ->
-            conn
-            |> put_status(:bad_request)
-            |> json(%{error: "Email, username, password, and password_confirmation are required"})
+      _ ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "Email, username, password, and password_confirmation are required"})
     end
   end
 
