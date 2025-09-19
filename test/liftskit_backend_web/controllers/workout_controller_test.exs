@@ -44,18 +44,7 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
         reps: 5,
         orm_percent: 0,
         weight: 135,
-        is_superset: true,
-        superset_exercises: [
-          %{
-            exercise_root_id: 2,
-            time: "0.00",
-            sets: 5,
-            reps: 5,
-            orm_percent: 0,
-            weight: 135,
-            is_superset: false
-          }
-        ]
+        is_superset: true
       },
       %{
         exercise_root_id: 2,
@@ -94,21 +83,7 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
         sets: 4,
         time: "2:00",
         weight: 185,
-        is_superset: true,
-        superset_exercises: [
-          %{
-            exercise_root: %{
-              name: "Dumbbell Flyes",
-              _type: "Strength"
-            },
-            orm_percent: 70.0,
-            reps: 12,
-            sets: 4,
-            time: "1:30",
-            weight: 30,
-            is_superset: false
-          }
-        ]
+        is_superset: true
       }
     ]
   }
@@ -223,9 +198,6 @@ defmodule LiftskitBackendWeb.WorkoutControllerTest do
       assert second_exercise["exerciseRoot"]["_type"] == "Strength"
 
       # Check superset exercise
-      superset_exercises = second_exercise["supersetExercises"]
-      assert length(superset_exercises) == 1
-      [superset_exercise] = superset_exercises
       assert superset_exercise["reps"] == 12
       assert superset_exercise["sets"] == 4
       assert superset_exercise["weight"] == 30

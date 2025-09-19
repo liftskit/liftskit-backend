@@ -5,19 +5,20 @@ defmodule LiftskitBackend.Exercises.Exercise do
   @derive Jason.Encoder
 
   schema "exercises" do
+    field :name, :string
+    field :_type, Ecto.Enum, values: [:Strength, :Bodyweight, :Cardio]
+
     field :orm_percent, :decimal
     field :reps, :integer
     field :sets, :integer
     field :time, :integer
     field :weight, :integer
+
     field :is_superset, :boolean, default: false
+    field :superset_group, :integer
+    field :superset_order, :integer
 
     belongs_to :workout, LiftskitBackend.Workouts.Workout, foreign_key: :workout_id
-    belongs_to :exercise_root, LiftskitBackend.ExerciseRoots.ExerciseRoot, foreign_key: :exercise_root_id
-
-    # join table for superset exercises
-    has_many :exercise_supersets, LiftskitBackend.Exercises.ExerciseSuperset, foreign_key: :exercise_id
-    has_many :superset_exercises, through: [:exercise_supersets, :superset_exercise]
 
     timestamps(type: :utc_datetime)
   end
@@ -40,11 +41,20 @@ defmodule LiftskitBackend.Exercises.Exercise do
     end
 
     exercise
-    |> cast(attrs, [:orm_percent, :reps, :sets, :time, :weight, :is_superset, :exercise_root_id])
-    |> validate_required([:orm_percent, :reps, :sets, :time, :weight, :is_superset, :exercise_root_id])
+    |> cast(attrs, [:name, :_type, :orm_percent, :reps, :sets, :time, :weight, :is_superset, :superset_group, :superset_order])
+    |> validate_required([:name, :_type, :orm_percent, :reps, :sets, :time, :weight, :is_superset])
+    |> validate_inclusion(:_type, [:Strength, :Bodyweight, :Cardio])
+    |> validate_superset_group()
     |> foreign_key_constraint(:workout_id)
-    |> foreign_key_constraint(:exercise_root_id)
     |> normalize_numeric_fields()
+  end
+
+  defp validate_superset_group(changeset) do
+    if get_field(changeset, :is_superset) do
+      validate_required(changeset, [:superset_group, :superset_order])
+    else
+      changeset
+    end
   end
 
   # Normalize numeric fields to ensure they're always valid integers

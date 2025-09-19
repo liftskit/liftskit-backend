@@ -8,7 +8,6 @@ defmodule LiftskitBackend.Workouts do
 
   alias LiftskitBackend.Workouts.Workout
   alias LiftskitBackend.Accounts.Scope
-  alias LiftskitBackend.ExerciseRoots
   alias LiftskitBackend.Programs
 
   @doc """
@@ -48,7 +47,7 @@ defmodule LiftskitBackend.Workouts do
       from w in Workout,
         join: p in assoc(w, :program),
         where: p.user_id == ^scope.user.id,
-        preload: [program: p, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]]
+        preload: [:exercises, program: p]
     )
   end
 
@@ -72,7 +71,7 @@ defmodule LiftskitBackend.Workouts do
       from w in Workout,
         join: p in assoc(w, :program),
         where: w.id == ^id and p.user_id == ^scope.user.id,
-        preload: [program: p, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]]
+        preload: [:exercises, program: p]
     )
   end
 
@@ -94,18 +93,8 @@ defmodule LiftskitBackend.Workouts do
 
     program_id = get_or_create_program(scope, attrs["program_name"])
 
-    # Process exercises to handle exercise_root lookup/creation
-    processed_exercises_data = Enum.map(exercises_data, fn exercise_data ->
-      process_exercise_data(scope, exercise_data)
-    end)
-
-    # Remove superset_exercises from each exercise data to avoid conflicts
-    cleaned_exercises_data = Enum.map(processed_exercises_data, fn exercise_data ->
-      Map.delete(exercise_data, "superset_exercises")
-    end)
-
-    # Create workout with cleaned exercise data
-    workout_attrs = Map.put(attrs, "exercises", cleaned_exercises_data)
+    # No exercise_root anymore; accept exercises as-is (name/_type provided)
+    workout_attrs = Map.put(attrs, "exercises", exercises_data)
 
     with {:ok, workout = %Workout{}} <-
            %Workout{}
@@ -114,11 +103,8 @@ defmodule LiftskitBackend.Workouts do
            |> Workout.changeset(workout_attrs)
            |> Repo.insert() do
 
-      # Handle superset_exercises for all exercises in the workout
-      handle_superset_exercises(workout, processed_exercises_data, scope)
-
       # Preload exercises and program for JSON serialization
-      workout = Repo.preload(workout, [:program, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]])
+      workout = Repo.preload(workout, [:program, :exercises])
       broadcast(scope, {:created, workout})
       {:ok, workout}
     end
@@ -135,45 +121,6 @@ defmodule LiftskitBackend.Workouts do
     end
   end
 
-  # Process exercise data to handle exercise_root lookup/creation
-  defp process_exercise_data(scope, exercise_data) do
-    case exercise_data do
-      %{"exercise_root" => %{"name" => name, "_type" => type}} ->
-        # Handle new format with exercise_root object
-        with {:ok, exercise_root} <- ExerciseRoots.find_or_create_exercise_root(scope, name, String.to_atom(type)) do
-          # Replace exercise_root object with exercise_root_id
-          exercise_data
-          |> Map.delete("exercise_root")
-          |> Map.put("exercise_root_id", exercise_root.id)
-        else
-          {:error, changeset} ->
-            # If exercise root creation fails, return the original data with error
-            Map.put(exercise_data, :exercise_root_error, changeset)
-        end
-      _ ->
-        # Handle existing format with exercise_root_id
-        exercise_data
-    end
-  end
-
-  # Handle superset_exercises for exercises in a workout
-  defp handle_superset_exercises(workout, exercises_data, scope) do
-    # Reload workout with exercises to ensure we have the latest data
-    workout = Repo.preload(workout, :exercises)
-
-    Enum.each(exercises_data, fn exercise_data ->
-      if exercise_data["superset_exercises"] && length(exercise_data["superset_exercises"]) > 0 do
-        # Find the corresponding exercise in the workout
-        exercise = Enum.find(workout.exercises, fn e ->
-          e.exercise_root_id == exercise_data["exercise_root_id"]
-        end)
-
-        if exercise do
-          LiftskitBackend.Exercises.create_superset_exercises(exercise, exercise_data["superset_exercises"], scope)
-        end
-      end
-    end)
-  end
 
   @doc """
   Updates a workout.
@@ -195,18 +142,9 @@ defmodule LiftskitBackend.Workouts do
     processed_attrs = if attrs["exercises"] do
       exercises_data = attrs["exercises"] || []
 
-      # Process exercises to handle exercise_root lookup/creation
-      processed_exercises_data = Enum.map(exercises_data, fn exercise_data ->
-        process_exercise_data(scope, exercise_data)
-      end)
-
-      # Remove superset_exercises from each exercise data to avoid conflicts
-      cleaned_exercises_data = Enum.map(processed_exercises_data, fn exercise_data ->
-        Map.delete(exercise_data, "superset_exercises")
-      end)
 
       # Replace exercises in attrs with processed data
-      Map.put(attrs, "exercises", cleaned_exercises_data)
+      Map.put(attrs, "exercises", exercises_data)
     else
       attrs
     end
@@ -216,17 +154,8 @@ defmodule LiftskitBackend.Workouts do
            |> Workout.changeset(processed_attrs)
            |> Repo.update() do
 
-      # Handle superset_exercises if exercises were updated
-      if attrs["exercises"] do
-        exercises_data = attrs["exercises"] || []
-        processed_exercises_data = Enum.map(exercises_data, fn exercise_data ->
-          process_exercise_data(scope, exercise_data)
-        end)
-        handle_superset_exercises(workout, processed_exercises_data, scope)
-      end
-
       # Preload exercises and program for JSON serialization
-      workout = Repo.preload(workout, [:program, exercises: [exercise_root: [], superset_exercises: [exercise_root: []]]])
+      workout = Repo.preload(workout, [:program, :exercises])
       broadcast(scope, {:updated, workout})
       {:ok, workout}
     end

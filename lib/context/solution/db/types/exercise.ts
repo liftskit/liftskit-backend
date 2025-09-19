@@ -15,7 +15,6 @@ export interface ElixirExercise {
   is_superset: boolean;
   exercise_root: ElixirExerciseRoot;
   workout_id: number;
-  superset_exercises?: ElixirExercise[];
 }
 
 export interface ElixirExercisePerformed {
@@ -52,7 +51,6 @@ export interface Exercise {
   is_superset: boolean;
   exercise_root: ExerciseRoot;
   workout_id: string;
-  superset_exercises?: Exercise[];
 }
 
 export interface ExercisePerformed {

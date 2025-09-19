@@ -28,36 +28,19 @@ defmodule LiftskitBackendWeb.WorkoutJSON do
   defp exercise_data(exercise) do
     %{
       id: exercise.id,
+      name: exercise.name,
+      _type: exercise._type,
       orm_percent: Decimal.to_float(exercise.orm_percent),
       reps: exercise.reps,
       sets: exercise.sets,
       time: exercise.time,
       weight: exercise.weight,
       is_superset: exercise.is_superset,
-      exercise_root: exercise_root_data(exercise.exercise_root),
+      superset_group: exercise.superset_group,
+      superset_order: exercise.superset_order,
       workout_id: exercise.workout_id,
-      superset_exercises: for(superset_exercise <- exercise.superset_exercises || [], do: superset_exercise_data(superset_exercise))
     }
   end
 
-  defp exercise_root_data(exercise_root) do
-    %{
-      id: exercise_root.id,
-      name: exercise_root.name,
-      _type: exercise_root._type
-    }
-  end
 
-  defp superset_exercise_data(superset_exercise) do
-    %{
-      id: superset_exercise.id,
-      orm_percent: Decimal.to_float(superset_exercise.orm_percent),
-      reps: superset_exercise.reps,
-      sets: superset_exercise.sets,
-      time: superset_exercise.time,
-      weight: superset_exercise.weight,
-      is_superset: superset_exercise.is_superset,
-      exercise_root: exercise_root_data(superset_exercise.exercise_root)
-    }
-  end
 end

@@ -58,7 +58,6 @@ export class DataMapper {
       is_superset: elixirExercise.is_superset,
       exercise_root: this.mapExerciseRoot(elixirExercise.exercise_root),
       workout_id: elixirExercise.workout_id.toString(),
-      superset_exercises: elixirExercise.superset_exercises?.map(ex => this.mapExercise(ex)),
     };
   }
 
