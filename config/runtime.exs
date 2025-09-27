@@ -37,13 +37,14 @@ if config_env() == :prod do
     region: System.get_env("AWS_REGION")
 
   config :liftskit_backend, LiftskitBackend.Repo,
-    ssl: false,
+    ssl: true,
+    ssl_opts: [verify: :verify_none],
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     # For machines with several cores, consider starting multiple pools of `pool_size`
     # pool_count: 4,
     socket_options: maybe_ipv6,
-    # Connection timeout and keepalive settings for Fly.io
+    # Connection timeout and keepalive settings for AWS RDS
     connect_timeout: 30_000,
     timeout: 30_000,
     pool_timeout: 30_000,

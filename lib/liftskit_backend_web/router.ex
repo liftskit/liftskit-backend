@@ -28,6 +28,13 @@ defmodule LiftskitBackendWeb.Router do
     get "/", PageController, :home
   end
 
+  # Health check endpoint for Docker
+  scope "/", LiftskitBackendWeb do
+    pipe_through :api
+
+    get "/health", HealthController, :check
+  end
+
   # Direct email route (no auth required)
   scope "/", LiftskitBackendWeb do
     pipe_through :api
