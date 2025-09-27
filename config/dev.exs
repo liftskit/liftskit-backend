@@ -2,8 +2,8 @@ import Config
 
 # Configure your database
 config :liftskit_backend, LiftskitBackend.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "travislinkey",
+  password: "",
   hostname: "localhost",
   database: "liftskit_backend_dev",
   stacktrace: true,
