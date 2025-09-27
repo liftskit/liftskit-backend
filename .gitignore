@@ -47,3 +47,9 @@ switch-to-production.sh
 # Ignore edit-db-config.sh
 edit-db-config.sh.env
 .env
+
+# Terraform files
+terraform/
+*.tar
+*.tar.gz
+*.gz
