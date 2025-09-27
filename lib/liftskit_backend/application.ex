@@ -13,7 +13,8 @@ defmodule LiftskitBackend.Application do
     children = [
       LiftskitBackendWeb.Telemetry,
       LiftskitBackend.Repo,
-      {DNSCluster, query: Application.get_env(:liftskit_backend, :dns_cluster_query) || :ignore},
+      # DNSCluster disabled for Railway deployment
+      # {DNSCluster, query: Application.get_env(:liftskit_backend, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: LiftskitBackend.PubSub},
       # Start a worker by calling: LiftskitBackend.Worker.start_link(arg)
       # {LiftskitBackend.Worker, arg},
