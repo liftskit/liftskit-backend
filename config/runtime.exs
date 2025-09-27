@@ -55,7 +55,9 @@ if config_env() == :prod do
     prepare: :named,
     # Retry configuration
     retry_interval: 1_000,
-    max_retries: 3
+    max_retries: 3,
+    # Enable sensitive data logging for debugging
+    show_sensitive_data_on_connection_error: true
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
