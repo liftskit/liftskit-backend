@@ -28,6 +28,14 @@ defmodule LiftskitBackendWeb.Router do
     get "/", PageController, :home
   end
 
+  # Direct email route (no auth required)
+  scope "/", LiftskitBackendWeb do
+    pipe_through :api
+
+    post "/email/login_code", EmailController, :send_email_recovery
+    post "/email/signup", EmailController, :send_signup_email
+  end
+
   # Other scopes may use custom stacks.
   scope "/api", LiftskitBackendWeb do
     pipe_through :api
@@ -94,7 +102,6 @@ defmodule LiftskitBackendWeb.Router do
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
 
-    post "/users/update-password", UserSessionController, :update_password
   end
 
   scope "/", LiftskitBackendWeb do

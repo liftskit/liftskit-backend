@@ -10,6 +10,7 @@ config :liftskit_backend, LiftskitBackend.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -85,3 +86,23 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :liftskit_backend, LiftskitBackend.Mailer,
+  adapter: Swoosh.Adapters.SMTP,
+  relay: "email-smtp.us-west-2.amazonaws.com",
+  port: 587,
+  # Use SES SMTP credentials generated in the SES console (not IAM keys)
+  username: "REDACTED_SES_SMTP_USERNAME",
+  password: "REDACTED_SES_SMTP_PASSWORD",
+  ssl: false,
+  tls: :always,
+  auth: :always,
+  retries: 2,
+  tls_options: [
+    versions: [:'tlsv1.2', :'tlsv1.3'],
+    server_name_indication: ~c"email-smtp.us-west-2.amazonaws.com",
+    verify: :verify_peer,
+    cacerts: :public_key.cacerts_get(),
+    depth: 5,
+    middlebox_comp_mode: false
+  ]

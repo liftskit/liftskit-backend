@@ -64,9 +64,6 @@ defmodule LiftskitBackendWeb.UserLive.Confirmation do
           <% end %>
         </.form>
 
-        <p :if={!@user.confirmed_at} class="alert alert-outline mt-8">
-          Tip: If you prefer passwords, you can enable them in the user settings.
-        </p>
       </div>
     </Layouts.app>
     """

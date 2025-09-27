@@ -9,7 +9,7 @@ defmodule LiftskitBackend.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"LiftskitBackend", "contact@example.com"})
+      |> from({"LiftskitBackend", "noreply@liftskit.com"})
       |> subject(subject)
       |> text_body(body)
 

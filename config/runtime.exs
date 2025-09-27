@@ -30,6 +30,12 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  config :liftskit_backend, LiftskitBackend.Mailer,
+    adapter: Swoosh.Adapters.AmazonSES,
+    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
+    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
+    region: System.get_env("AWS_REGION")
+
   config :liftskit_backend, LiftskitBackend.Repo,
     ssl: false,
     url: database_url,
@@ -85,6 +91,20 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base
+
+  # ## AWS SES Mailer Configuration (SMTP)
+  #
+  # Configure the mailer to use AWS SES SMTP for sending emails.
+  # Set these environment variables with your AWS SES SMTP credentials:
+  # AWS_SES_SMTP_USERNAME, AWS_SES_SMTP_PASSWORD, AWS_SES_REGION
+  config :liftskit_backend, LiftskitBackend.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: "email-smtp.#{System.get_env("AWS_SES_REGION") || "us-east-1"}.amazonaws.com",
+    port: 587,
+    username: System.get_env("AWS_SES_SMTP_USERNAME"),
+    password: System.get_env("AWS_SES_SMTP_PASSWORD"),
+    tls: :always,
+    auth: :always
 
   # ## SSL Support
   #
