@@ -26,6 +26,7 @@ defmodule LiftskitBackendWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/health", HealthController, :health
   end
 
   # Other scopes may use custom stacks.

@@ -86,7 +86,9 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
+    secret_key_base: secret_key_base,
+    # Allow Railway healthcheck hostname
+    check_origin: ["https://#{host}", "https://healthcheck.railway.app"]
 
   # ## SSL Support
   #
