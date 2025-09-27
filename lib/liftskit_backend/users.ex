@@ -39,6 +39,12 @@ defmodule LiftskitBackend.Users do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
+  Gets a user by email.
+  """
+  def get_user_by_email(email), do:
+    Repo.get_by(User, email: email)
+
+  @doc """
   Searches for users by username with fuzzy matching.
 
   ## Examples

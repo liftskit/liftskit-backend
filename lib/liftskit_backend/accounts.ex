@@ -27,23 +27,6 @@ defmodule LiftskitBackend.Accounts do
     Repo.get_by(User, email: email)
   end
 
-  @doc """
-  Gets a user by email and password.
-
-  ## Examples
-
-      iex> get_user_by_email_and_password("foo@example.com", "correct_password")
-      %User{}
-
-      iex> get_user_by_email_and_password("foo@example.com", "invalid_password")
-      nil
-
-  """
-  def get_user_by_email_and_password(email, password)
-      when is_binary(email) and is_binary(password) do
-    user = Repo.get_by(User, email: email)
-    if User.valid_password?(user, password), do: user
-  end
 
   @doc """
   Gets a single user.
@@ -76,16 +59,30 @@ defmodule LiftskitBackend.Accounts do
 
   """
   def register_user(attrs) do
-    # Use mobile registration changeset if password fields are present
-    changeset = if Map.has_key?(attrs, :password) do
-      %User{}
-      |> User.mobile_registration_changeset(attrs)
-    else
-      %User{}
-      |> User.registration_changeset(attrs)
-    end
+    %User{}
+    |> User.registration_changeset(attrs)
+    |> Repo.insert()
+  end
 
-    Repo.insert(changeset)
+  @doc """
+  Generates a login code for a user and sets its expiration time.
+  """
+  def generate_login_code_for_user(user, expiration_minutes \\ 15) do
+    login_code = :crypto.strong_rand_bytes(8) |> Base.url_encode64(padding: false)
+    expires_at = DateTime.utc_now() |> DateTime.add(expiration_minutes, :minute)
+
+    user
+    |> User.login_code_changeset(%{login_code: login_code, login_code_expires_at: expires_at})
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates a user's login code.
+  """
+  def update_user_login_code(user, attrs) do
+    user
+    |> User.login_code_changeset(attrs)
+    |> Repo.update()
   end
 
   ## Settings
@@ -169,40 +166,6 @@ defmodule LiftskitBackend.Accounts do
     end)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for changing the user password.
-
-  See `LiftskitBackend.Accounts.User.password_changeset/3` for a list of supported options.
-
-  ## Examples
-
-      iex> change_user_password(user)
-      %Ecto.Changeset{data: %User{}}
-
-  """
-  def change_user_password(user, attrs \\ %{}, opts \\ []) do
-    User.password_changeset(user, attrs, opts)
-  end
-
-  @doc """
-  Updates the user password.
-
-  Returns a tuple with the updated user, as well as a list of expired tokens.
-
-  ## Examples
-
-      iex> update_user_password(user, %{password: ...})
-      {:ok, {%User{}, [...]}}
-
-      iex> update_user_password(user, %{password: "too short"})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_user_password(user, attrs) do
-    user
-    |> User.password_changeset(attrs)
-    |> update_user_and_delete_all_tokens()
-  end
 
   ## Session
 
@@ -245,30 +208,15 @@ defmodule LiftskitBackend.Accounts do
   1. The user has already confirmed their email. They are logged in
      and the magic link is expired.
 
-  2. The user has not confirmed their email and no password is set.
+  2. The user has not confirmed their email.
      In this case, the user gets confirmed, logged in, and all tokens -
      including session ones - are expired. In theory, no other tokens
      exist but we delete all of them for best security practices.
-
-  3. The user has not confirmed their email but a password is set.
-     This cannot happen in the default implementation but may be the
-     source of security pitfalls. See the "Mixing magic link and password registration" section of
-     `mix help phx.gen.auth`.
   """
   def login_user_by_magic_link(token) do
     {:ok, query} = UserToken.verify_magic_link_token_query(token)
 
     case Repo.one(query) do
-      # Prevent session fixation attacks by disallowing magic links for unconfirmed users with password
-      {%User{confirmed_at: nil, hashed_password: hash}, _token} when not is_nil(hash) ->
-        raise """
-        magic link log in is not allowed for unconfirmed users with a password set!
-
-        This cannot happen with the default implementation, which indicates that you
-        might have adapted the code to a different use case. Please make sure to read the
-        "Mixing magic link and password registration" section of `mix help phx.gen.auth`.
-        """
-
       {%User{confirmed_at: nil} = user, _token} ->
         user
         |> User.confirm_changeset()
