@@ -49,7 +49,7 @@ defmodule LiftskitBackendWeb.EmailController do
 
   defp send_email(conn, to_email, from_email, subject, body) do
     email_struct = %Swoosh.Email{}
-    |> Swoosh.Email.to(to_email)
+    |> Swoosh.Email.to([{"User", to_email}])
     |> Swoosh.Email.from({"Liftskit", from_email})
     |> Swoosh.Email.subject(subject)
     |> Swoosh.Email.text_body(body)
