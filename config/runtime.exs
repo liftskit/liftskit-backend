@@ -40,29 +40,7 @@ if config_env() == :prod do
     ssl: true,
     ssl_opts: [verify: :verify_none],
     url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
-    # For machines with several cores, consider starting multiple pools of `pool_size`
-    # pool_count: 4,
-    socket_options: maybe_ipv6,
-    # Connection timeout and keepalive settings for AWS RDS
-    connect_timeout: 30_000,
-    timeout: 30_000,
-    pool_timeout: 30_000,
-    ownership_timeout: 30_000,
-    # TCP keepalive settings to prevent idle connection drops
-    tcp_keepalive: [
-      idle: 600,
-      interval: 30,
-      count: 3
-    ],
-    # Additional pool configuration for better connection management
-    queue_target: 5_000,
-    queue_interval: 1_000,
-    # Enable connection validation
-    prepare: :named,
-    # Retry configuration
-    retry_interval: 1_000,
-    max_retries: 3
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
