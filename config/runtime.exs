@@ -30,6 +30,11 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  # ## AWS SES Mailer Configuration (API)
+  #
+  # Configure the mailer to use AWS SES API for sending emails.
+  # Set these environment variables with your AWS credentials:
+  # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
   config :liftskit_backend, LiftskitBackend.Mailer,
     adapter: Swoosh.Adapters.AmazonSES,
     access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
@@ -91,21 +96,9 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
-    secret_key_base: secret_key_base
-
-  # ## AWS SES Mailer Configuration (SMTP)
-  #
-  # Configure the mailer to use AWS SES SMTP for sending emails.
-  # Set these environment variables with your AWS SES SMTP credentials:
-  # AWS_SES_SMTP_USERNAME, AWS_SES_SMTP_PASSWORD, AWS_SES_REGION
-  config :liftskit_backend, LiftskitBackend.Mailer,
-    adapter: Swoosh.Adapters.SMTP,
-    relay: "email-smtp.#{System.get_env("AWS_SES_REGION") || "us-east-1"}.amazonaws.com",
-    port: 587,
-    username: System.get_env("AWS_SES_SMTP_USERNAME"),
-    password: System.get_env("AWS_SES_SMTP_PASSWORD"),
-    tls: :always,
-    auth: :always
+    secret_key_base: secret_key_base,
+    # Allow Railway healthcheck hostname
+    check_origin: ["https://#{host}", "https://healthcheck.railway.app"]
 
   # ## SSL Support
   #
