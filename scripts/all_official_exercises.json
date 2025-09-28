@@ -1,0 +1,103 @@
+{
+    "exercises": [
+        {
+            "name": "Back Squat"
+        },
+        {
+            "name": "Barbell Row"
+        },
+        {
+            "name": "Bench Press"
+        },
+        {
+            "name": "Box Squat"
+        },
+        {
+            "name": "Bulgarian Split Squat"
+        },
+        {
+            "name": "Calf Raise"
+        },
+        {
+            "name": "Clean"
+        },
+        {
+            "name": "Close-Grip Bench Press"
+        },
+        {
+            "name": "Conventional Deadlift"
+        },
+        {
+            "name": "Deadlift"
+        },
+        {
+            "name": "Dips"
+        },
+        {
+            "name": "Front Squat"
+        },
+        {
+            "name": "Hang Clean"
+        },
+        {
+            "name": "Hang Snatch"
+        },
+        {
+            "name": "Hip Thrust"
+        },
+        {
+            "name": "Incline Bench Press"
+        },
+        {
+            "name": "Jerk"
+        },
+        {
+            "name": "Leg Press"
+        },
+        {
+            "name": "Lunge"
+        },
+        {
+            "name": "Overhead Press"
+        },
+        {
+            "name": "Pause Squat"
+        },
+        {
+            "name": "Power Clean"
+        },
+        {
+            "name": "Power Jerk"
+        },
+        {
+            "name": "Power Snatch"
+        },
+        {
+            "name": "Pull-Up"
+        },
+        {
+            "name": "Push-Up"
+        },
+        {
+            "name": "Romanian Deadlift"
+        },
+        {
+            "name": "Row"
+        },
+        {
+            "name": "Shoulder Press"
+        },
+        {
+            "name": "Snatch"
+        },
+        {
+            "name": "Split Squat"
+        },
+        {
+            "name": "Sumo Deadlift"
+        },
+        {
+            "name": "Weighted Pull-Up"
+        }
+    ]
+}

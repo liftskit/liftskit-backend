@@ -66,6 +66,10 @@ defmodule LiftskitBackend.OfficialExercises do
     Repo.get_by!(OfficialExercise, name: name)
   end
 
+  def get_official_exercise_by_name(name) do
+    Repo.get_by(OfficialExercise, name: name)
+  end
+
   @doc """
   Creates a official_exercise.
 
@@ -139,7 +143,7 @@ defmodule LiftskitBackend.OfficialExercises do
       %Ecto.Changeset{data: %OfficialExercise{}}
 
   """
-  def change_official_exercise(%Scope{} = scope, %OfficialExercise{} = official_exercise, attrs \\ %{}) do
+  def change_official_exercise(%Scope{} = _scope, %OfficialExercise{} = official_exercise, attrs \\ %{}) do
     OfficialExercise.changeset(official_exercise, attrs)
   end
 end

@@ -65,6 +65,7 @@ defmodule LiftskitBackendWeb.Router do
 
     ## Admin
     resources "/official_exercises", OfficialExerciseController, only: [:index, :create, :delete]
+    post "/official_exercises/list", OfficialExerciseController, :create_many
     resources "/one_rep_max", OneRepMaxController, only: [:index, :create, :delete, :show, :update]
 
     ## Workouts

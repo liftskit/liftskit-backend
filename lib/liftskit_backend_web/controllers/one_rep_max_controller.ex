@@ -13,8 +13,8 @@ defmodule LiftskitBackendWeb.OneRepMaxController do
     render(conn, :index, one_rep_max: one_rep_max)
   end
 
-  def create(conn, %{"exerciseName" => exercise_name, "oneRepMax" => one_rep_max}) do
-    case OfficialExercises.get_official_exercise_by_name!(exercise_name) do
+  def create(conn, %{"exercise_name" => exercise_name, "one_rep_max" => one_rep_max}) do
+    case OfficialExercises.get_official_exercise_by_name(exercise_name) do
       %OfficialExercise{} ->
         with {:ok, %OneRepMax{} = one_rep_max} <- OneRepMaxes.create_one_rep_max(conn.assigns.current_scope, %{exercise_name: exercise_name, one_rep_max: one_rep_max, user_id: conn.assigns.current_scope.user.id}) do
           conn
@@ -39,7 +39,7 @@ defmodule LiftskitBackendWeb.OneRepMaxController do
     render(conn, :show, one_rep_max: one_rep_max)
   end
 
-  def update(conn, %{"id" => id, "oneRepMax" => updated_one_rep_max}) do
+  def update(conn, %{"id" => id, "one_rep_max" => updated_one_rep_max}) do
     one_rep_max = OneRepMaxes.get_one_rep_max!(conn.assigns.current_scope, id)
 
     with {:ok, %OneRepMax{} = one_rep_max} <- OneRepMaxes.update_one_rep_max(conn.assigns.current_scope, one_rep_max, %{one_rep_max: updated_one_rep_max}) do

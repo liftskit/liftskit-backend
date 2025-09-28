@@ -15,9 +15,24 @@ defmodule LiftskitBackendWeb.OfficialExerciseController do
     with {:ok, %OfficialExercise{} = official_exercise} <- OfficialExercises.create_official_exercise(conn.assigns.current_scope, official_exercise_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/official_exercises/#{official_exercise}")
       |> render(:show, official_exercise: official_exercise)
     end
+  end
+
+  def create_many(conn, official_exercise_params) do
+    exercises = official_exercise_params["exercises"]
+    official_exercises =
+      Enum.reduce(exercises, [], fn official_exercise_param, acc ->
+        with {:ok, %OfficialExercise{} = official_exercise} <- OfficialExercises.create_official_exercise(conn.assigns.current_scope, official_exercise_param) do
+          [official_exercise | acc]
+        else
+          _ -> acc
+        end
+      end)
+
+    conn
+    |> put_status(:created)
+    |> render(:index, official_exercises: official_exercises)
   end
 
   def show(conn, %{"id" => id}) do

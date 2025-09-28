@@ -14,26 +14,6 @@ config :swoosh, api_client: Swoosh.ApiClient.Req
 # Disable Swoosh Local Memory Storage
 config :swoosh, local: false
 
-# Configure mailer for production
-config :liftskit_backend, LiftskitBackend.Mailer,
-  adapter: Swoosh.Adapters.SMTP,
-  # These will be overridden by runtime.exs with environment variables
-  relay: "email-smtp.us-west-2.amazonaws.com",
-  port: 587,
-  ssl: false,
-  tls: :always,
-  auth: :always,
-  retries: 2,
-  timeout: 30_000,
-  tls_options: [
-    versions: [:'tlsv1.2', :'tlsv1.3'],
-    server_name_indication: ~c"email-smtp.us-west-2.amazonaws.com",
-    verify: :verify_peer,
-    cacerts: :public_key.cacerts_get(),
-    depth: 5,
-    middlebox_comp_mode: false
-  ]
-
 # Do not print debug messages in production
 config :logger, level: :info
 
