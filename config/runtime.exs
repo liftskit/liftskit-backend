@@ -30,11 +30,7 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
-  config :liftskit_backend, LiftskitBackend.Mailer,
-    adapter: Swoosh.Adapters.AmazonSES,
-    access_key_id: System.get_env("AWS_ACCESS_KEY_ID"),
-    secret_access_key: System.get_env("AWS_SECRET_ACCESS_KEY"),
-    region: System.get_env("AWS_REGION")
+  # Note: Mailer configuration moved below to avoid conflicts
 
   config :liftskit_backend, LiftskitBackend.Repo,
     ssl: true,
@@ -109,7 +105,18 @@ if config_env() == :prod do
     username: System.get_env("AWS_SES_SMTP_USERNAME"),
     password: System.get_env("AWS_SES_SMTP_PASSWORD"),
     tls: :always,
-    auth: :always
+    auth: :always,
+    # Add timeout and retry configuration
+    timeout: 30_000,
+    retries: 3,
+    no_mx_lookups: false,
+    # TLS options for better connectivity
+    tls_options: [
+      versions: [:'tlsv1.2', :'tlsv1.3'],
+      verify: :verify_peer,
+      cacerts: :public_key.cacerts_get(),
+      depth: 5
+    ]
 
   # ## SSL Support
   #
