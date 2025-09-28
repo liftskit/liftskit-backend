@@ -75,7 +75,7 @@ defmodule LiftskitBackendWeb.Router do
     resources "/workouts", WorkoutController, only: [:index, :create, :delete, :show, :update]
 
     ## Workout performed
-    resources "/exercise_performed", ExercisePerformedController, only: [:index, :create, :delete, :show, :update]
+    resources "/exercises_performed", ExercisePerformedController, only: [:index, :create, :delete, :show, :update]
     resources "/workouts_performed", WorkoutPerformedController, only: [:index, :create, :delete, :show, :update]
 
     ## Other

@@ -42,6 +42,7 @@ defmodule LiftskitBackend.ExercisesPerformed do
   """
   def list_exercise_performed(%Scope{} = _scope) do
     ExercisePerformed
+    |> preload(:workout_performed)
     |> Repo.all()
   end
 
@@ -61,6 +62,7 @@ defmodule LiftskitBackend.ExercisesPerformed do
   """
   def get_exercise_performed!(%Scope{} = _scope, id) do
     ExercisePerformed
+    |> preload(:workout_performed)
     |> Repo.get_by!(id: id)
   end
 
@@ -87,6 +89,7 @@ defmodule LiftskitBackend.ExercisesPerformed do
       # Reload the exercise_performed with associations to ensure superset relationships are loaded
       exercise_performed_with_associations =
         ExercisePerformed
+        |> preload(:workout_performed)
         |> Repo.get!(exercise_performed.id)
 
       {:ok, exercise_performed_with_associations}
@@ -115,7 +118,14 @@ defmodule LiftskitBackend.ExercisesPerformed do
            |> ExercisePerformed.changeset(attrs)
            |> Repo.update() do
       broadcast(scope, {:updated, exercise_performed})
-      {:ok, exercise_performed}
+
+      # Reload with associations to ensure workout_performed is loaded
+      exercise_performed_with_associations =
+        ExercisePerformed
+        |> preload(:workout_performed)
+        |> Repo.get!(exercise_performed.id)
+
+      {:ok, exercise_performed_with_associations}
     end
   end
 

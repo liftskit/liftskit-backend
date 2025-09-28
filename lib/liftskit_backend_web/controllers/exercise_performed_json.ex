@@ -24,6 +24,11 @@ defmodule LiftskitBackendWeb.ExercisePerformedJSON do
       sets: exercise_performed.sets,
       time: exercise_performed.time,
       weight: exercise_performed.weight,
+      is_superset: exercise_performed.is_superset,
+      superset_group: exercise_performed.superset_group,
+      superset_order: exercise_performed.superset_order,
+      workout_performed_id: exercise_performed.workout_performed_id,
+      performed_at: exercise_performed.workout_performed && exercise_performed.workout_performed.workout_date
     }
   end
 end
