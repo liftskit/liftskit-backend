@@ -89,11 +89,11 @@ config :swoosh, :api_client, false
 
 config :liftskit_backend, LiftskitBackend.Mailer,
   adapter: Swoosh.Adapters.SMTP,
-  relay: "email-smtp.us-west-2.amazonaws.com",
+  relay: "email-smtp.#{System.get_env("AWS_SES_REGION") || "us-west-2"}.amazonaws.com",
   port: 587,
   # Use SES SMTP credentials generated in the SES console (not IAM keys)
-  username: "REDACTED_SES_SMTP_USERNAME",
-  password: "REDACTED_SES_SMTP_PASSWORD",
+  username: System.get_env("AWS_SES_SMTP_USERNAME"),
+  password: System.get_env("AWS_SES_SMTP_PASSWORD"),
   ssl: false,
   tls: :always,
   auth: :always,
@@ -101,7 +101,7 @@ config :liftskit_backend, LiftskitBackend.Mailer,
   timeout: 30_000,
   tls_options: [
     versions: [:'tlsv1.2', :'tlsv1.3'],
-    server_name_indication: ~c"email-smtp.us-west-2.amazonaws.com",
+    server_name_indication: ~c"email-smtp.#{System.get_env("AWS_SES_REGION") || "us-west-2"}.amazonaws.com",
     verify: :verify_peer,
     cacerts: :public_key.cacerts_get(),
     depth: 5,
