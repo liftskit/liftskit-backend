@@ -84,26 +84,12 @@ config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
 
-# Disable swoosh api client as it is only required for production adapters.
-config :swoosh, :api_client, false
+# Enable swoosh api client for AmazonSES adapter
+config :swoosh, :api_client, Swoosh.ApiClient.Req
 
 config :liftskit_backend, LiftskitBackend.Mailer,
-  adapter: Swoosh.Adapters.SMTP,
-  relay: "email-smtp.#{System.get_env("AWS_SES_REGION") || "us-west-2"}.amazonaws.com",
-  port: 587,
-  # Use SES SMTP credentials generated in the SES console (not IAM keys)
-  username: System.get_env("AWS_SES_SMTP_USERNAME"),
-  password: System.get_env("AWS_SES_SMTP_PASSWORD"),
-  ssl: false,
-  tls: :always,
-  auth: :always,
-  retries: 3,
-  timeout: 30_000,
-  tls_options: [
-    versions: [:'tlsv1.2', :'tlsv1.3'],
-    server_name_indication: ~c"email-smtp.#{System.get_env("AWS_SES_REGION") || "us-west-2"}.amazonaws.com",
-    verify: :verify_peer,
-    cacerts: :public_key.cacerts_get(),
-    depth: 5,
-    middlebox_comp_mode: false
-  ]
+  adapter: Swoosh.Adapters.AmazonSES,
+  region: System.get_env("AWS_SES_REGION") || "us-west-2",
+  # Use your IAM credentials for SES API
+  access_key: System.get_env("AWS_SES_ACCESS_KEY"),
+  secret: System.get_env("AWS_SES_SECRET")

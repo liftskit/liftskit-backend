@@ -99,23 +99,11 @@ if config_env() == :prod do
   # Set these environment variables with your AWS SES SMTP credentials:
   # AWS_SES_SMTP_USERNAME, AWS_SES_SMTP_PASSWORD, AWS_SES_REGION
   config :liftskit_backend, LiftskitBackend.Mailer,
-    adapter: Swoosh.Adapters.SMTP,
-    relay: "email-smtp.#{System.get_env("AWS_SES_REGION") || "us-west-2"}.amazonaws.com",
-    port: 587,
-    username: System.get_env("AWS_SES_SMTP_USERNAME"),
-    password: System.get_env("AWS_SES_SMTP_PASSWORD"),
-    ssl: false,
-    tls: :always,
-    auth: :always,
-    retries: 2,
-    tls_options: [
-      versions: [:'tlsv1.2', :'tlsv1.3'],
-      server_name_indication: ~c"email-smtp.#{System.get_env("AWS_SES_REGION") || "us-west-2"}.amazonaws.com",
-      verify: :verify_peer,
-      cacerts: :public_key.cacerts_get(),
-      depth: 5,
-      middlebox_comp_mode: false
-    ]
+    adapter: Swoosh.Adapters.AmazonSES,
+    region: System.get_env("AWS_SES_REGION") || "us-west-2",
+    # Use your IAM credentials for SES API
+    access_key: System.get_env("AWS_SES_ACCESS_KEY"),
+    secret: System.get_env("AWS_SES_SECRET")
 
   # ## SSL Support
   #
