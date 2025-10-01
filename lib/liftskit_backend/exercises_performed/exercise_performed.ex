@@ -23,8 +23,9 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
   def changeset(exercise_performed, attrs) do
     exercise_performed
     |> cast(attrs, [:_type, :name, :reps, :sets, :time, :weight, :workout_performed_id, :is_superset, :superset_group, :superset_order])
-    |> validate_required([:_type, :name, :reps, :sets, :time, :weight, :is_superset])
+    |> validate_required([:_type, :name])
     |> validate_inclusion(:_type, [:Strength, :Bodyweight, :Cardio])
+    |> validate_type_specific_requirements()
     |> validate_superset_group()
     |> foreign_key_constraint(:workout_performed_id)
   end
@@ -34,6 +35,23 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
       validate_required(changeset, [:superset_group, :superset_order])
     else
       changeset
+    end
+  end
+
+  defp validate_type_specific_requirements(changeset) do
+    case get_field(changeset, :_type) do
+      :Cardio ->
+        validate_required(changeset, [:time])
+      :Weightlifting ->
+        validate_required(changeset, [:reps, :sets, :weight])
+      :Strength  ->
+        changeset
+        |> validate_required([:reps, :sets, :weight])
+
+      :Bodyweight ->
+        validate_required(changeset, [:reps, :sets])
+      _ ->
+        changeset
     end
   end
 end
