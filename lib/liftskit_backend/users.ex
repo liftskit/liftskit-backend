@@ -91,8 +91,33 @@ defmodule LiftskitBackend.Users do
 
   """
   def update_user(%User{} = user, attrs) do
+    # Check if we're updating settings (like dark_mode) or profile info
+    if Map.has_key?(attrs, :dark_mode) or Map.has_key?(attrs, "dark_mode") do
+      user
+      |> User.settings_changeset(attrs)
+      |> Repo.update()
+    else
+      user
+      |> User.registration_changeset(attrs)
+      |> Repo.update()
+    end
+  end
+
+  @doc """
+  Updates the current user's settings (like dark_mode).
+
+  ## Examples
+
+      iex> update_current_user(user, %{dark_mode: true})
+      {:ok, %User{}}
+
+      iex> update_current_user(user, %{dark_mode: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_current_user(%User{} = user, attrs) do
     user
-    |> User.registration_changeset(attrs)
+    |> User.settings_changeset(attrs)
     |> Repo.update()
   end
 

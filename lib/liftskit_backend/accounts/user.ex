@@ -9,6 +9,7 @@ defmodule LiftskitBackend.Accounts.User do
     field :login_code_expires_at, :utc_datetime
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
+    field :dark_mode, :boolean, default: false
 
     timestamps(type: :utc_datetime)
   end
@@ -25,6 +26,11 @@ defmodule LiftskitBackend.Accounts.User do
     |> cast(attrs, [:login_code, :login_code_expires_at])
     |> validate_login_code(opts)
     |> validate_login_code_expires_at(opts)
+  end
+
+  def settings_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:dark_mode])
   end
 
 

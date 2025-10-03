@@ -63,7 +63,8 @@ defmodule LiftskitBackendWeb.UserSessionController do
                 user: %{
                   id: user.id,
                   email: user.email,
-                  username: user.username
+                  username: user.username,
+                  dark_mode: user.dark_mode
                 },
                 token: token,
                 socket_token: socket_token
@@ -109,7 +110,8 @@ defmodule LiftskitBackendWeb.UserSessionController do
                 user: %{
                   id: user.id,
                   email: user.email,
-                  username: user.username
+                  username: user.username,
+                  dark_mode: user.dark_mode
                 },
                 token: token,
                 socket_token: socket_token

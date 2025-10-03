@@ -40,6 +40,14 @@ defmodule LiftskitBackendWeb.UserController do
     end
   end
 
+  def update(conn, %{"user" => user_params}) do
+    current_user = conn.assigns.current_scope.user
+
+    with {:ok, %User{} = user} <- Users.update_current_user(current_user, user_params) do
+      render(conn, :show, user: user)
+    end
+  end
+
   def delete(conn, %{"id" => id}) do
     user = Users.get_user!(id)
 

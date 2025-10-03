@@ -19,7 +19,8 @@ defmodule LiftskitBackendWeb.UserJSON do
     %{
       id: user.id,
       username: user.username,
-      email: user.email
+      email: user.email,
+      dark_mode: user.dark_mode
     }
   end
 end
