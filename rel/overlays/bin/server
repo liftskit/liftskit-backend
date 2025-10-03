@@ -2,4 +2,16 @@
 set -eu
 
 cd -P -- "$(dirname -- "$0")"
+
+# Check if migrations need to be run and run them if necessary
+echo "Checking for pending migrations..."
+if ./liftskit_backend eval "case LiftskitBackend.Release.pending_migrations() do [] -> :none; pending -> {:pending, pending} end" | grep -q ":pending"; then
+  echo "Running pending migrations..."
+  ./liftskit_backend eval LiftskitBackend.Release.migrate
+  echo "Migrations completed successfully!"
+else
+  echo "No pending migrations found."
+fi
+
+# Start the server
 PHX_SERVER=true exec ./liftskit_backend start

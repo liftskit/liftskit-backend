@@ -13,6 +13,16 @@ defmodule LiftskitBackend.Release do
     end
   end
 
+  def pending_migrations do
+    load_app()
+
+    for repo <- repos() do
+      {:ok, _, pending} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.migrations(&1, :up))
+      List.flatten(pending)
+    end
+    |> List.flatten()
+  end
+
   def rollback(repo, version) do
     load_app()
     {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
