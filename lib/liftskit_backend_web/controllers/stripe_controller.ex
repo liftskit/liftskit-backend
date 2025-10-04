@@ -21,7 +21,7 @@ defmodule LiftskitBackendWeb.StripeController do
     Logger.info("Webhook params: #{inspect(params, limit: 100)}")
 
     with {:ok, payment_intent} <- parse_webhook_params(params),
-         {:ok, user} <- find_user_from_customer_id(payment_intent["customer"]),
+         {:ok, user} <- find_user_from_email(payment_intent["customer_email"]),
          {:ok, subscription_end_time} <- calculate_subscription_end_time(payment_intent),
          {:ok, _updated_user} <- renew_user_membership(user, subscription_end_time, payment_intent) do
       Logger.info("Membership successfully renewed for user #{user.id}")
@@ -30,11 +30,11 @@ defmodule LiftskitBackendWeb.StripeController do
       |> json(%{message: "Membership successfully renewed"})
     else
       {:error, :user_not_found} ->
-        customer_id = params["data"]["object"]["customer"]
-        Logger.warning("User not found for customer ID: #{customer_id}")
+        customer_email = params["data"]["object"]["customer_email"]
+        Logger.warning("User not found for customer email: #{customer_email}")
         conn
         |> put_status(:not_found)
-        |> json(%{error: "User not found for customer ID"})
+        |> json(%{error: "User not found for customer email"})
 
       {:error, reason} ->
         Logger.error("Failed to process webhook: #{inspect(reason)}")
@@ -81,12 +81,13 @@ defmodule LiftskitBackendWeb.StripeController do
     end
   end
 
-  defp find_user_from_customer_id(customer_id) do
-    case LiftskitBackend.Users.get_user_by_stripe_customer_id(customer_id) do
+  defp find_user_from_email(email) do
+    case LiftskitBackend.Users.get_user_by_email(email) do
       nil -> {:error, :user_not_found}
       user -> {:ok, user}
     end
   end
+
 
   defp calculate_subscription_end_time(payment_intent) do
     # Try to get period_end directly from invoice first
