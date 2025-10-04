@@ -55,13 +55,18 @@ defmodule LiftskitBackendWeb.Router do
   scope "/api", LiftskitBackendWeb do
     pipe_through [:api_auth]
 
+    # --- Stripe API ---
+    post "/stripe/webhook", StripeController, :webhook
+
+    # --- Messages API ---
+
     resources "/rooms", RoomController, only: [:index, :create, :delete]
     resources "/messages", MessageController, only: [:index, :create, :delete, :show, :update]
     get "/users/search", UserController, :search
     resources "/users", UserController, only: [:index, :show, :create, :update, :delete]
     get "/users/:user_id/conversations", MessageController, :conversations_with_user
 
-    # Liftskit API
+    # --- Liftskit API ---
 
     ## Admin
     resources "/official_exercises", OfficialExerciseController, only: [:index, :create, :delete]
