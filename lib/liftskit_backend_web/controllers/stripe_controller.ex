@@ -16,28 +16,41 @@ defmodule LiftskitBackendWeb.StripeController do
   action_fallback LiftskitBackendWeb.FallbackController
 
   def webhook(conn, %{"type" => "invoice.payment_succeeded"} = params) do
+    require Logger
+    Logger.info("Received invoice.payment_succeeded webhook")
+    Logger.info("Webhook params: #{inspect(params, limit: 100)}")
+
     with {:ok, payment_intent} <- parse_webhook_params(params),
          {:ok, user} <- find_user_from_customer_id(payment_intent["customer"]),
          {:ok, subscription_end_time} <- calculate_subscription_end_time(payment_intent),
          {:ok, _updated_user} <- renew_user_membership(user, subscription_end_time, payment_intent) do
+      Logger.info("Membership successfully renewed for user #{user.id}")
       conn
       |> put_status(:ok)
       |> json(%{message: "Membership successfully renewed"})
     else
       {:error, :user_not_found} ->
+        customer_id = params["data"]["object"]["customer"]
+        Logger.warning("User not found for customer ID: #{customer_id}")
         conn
         |> put_status(:not_found)
         |> json(%{error: "User not found for customer ID"})
 
       {:error, reason} ->
+        Logger.error("Failed to process webhook: #{inspect(reason)}")
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{error: "Failed to process webhook: #{inspect(reason)}"})
     end
   end
 
-  def webhook(conn, _params) do
+  def webhook(conn, params) do
     # Handle other webhook types or unknown events
+    require Logger
+    Logger.info("Received webhook with generic handler")
+    Logger.info("Webhook type: #{params["type"]}")
+    Logger.info("Webhook params: #{inspect(params, limit: 50)}")
+
     conn
     |> put_status(:ok)
     |> json(%{message: "Webhook received but not processed"})
