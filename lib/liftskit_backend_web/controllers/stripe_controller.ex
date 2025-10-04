@@ -3,7 +3,7 @@ defmodule LiftskitBackendWeb.StripeController do
   Stripe webhook handler for processing payment events.
 
   This controller handles Stripe webhooks, specifically:
-  - invoice.payment_succeeded: Automatically renews user membership when monthly payments succeed
+  - invoice.paid: Automatically renews user membership when monthly payments succeed
   - Other webhook types: Acknowledges receipt but doesn't process
 
   Usage:
@@ -15,9 +15,9 @@ defmodule LiftskitBackendWeb.StripeController do
 
   action_fallback LiftskitBackendWeb.FallbackController
 
-  def webhook(conn, %{"type" => "invoice.payment_succeeded"} = params) do
+  def webhook(conn, %{"type" => "invoice.paid"} = params) do
     require Logger
-    Logger.info("Received invoice.payment_succeeded webhook")
+    Logger.info("Received invoice.paid webhook")
     Logger.info("Webhook params: #{inspect(params, limit: 100)}")
 
     with {:ok, payment_intent} <- parse_webhook_params(params),
@@ -89,21 +89,26 @@ defmodule LiftskitBackendWeb.StripeController do
   end
 
   defp calculate_subscription_end_time(payment_intent) do
-    # Extract subscription period end from invoice lines
-    invoice_lines = payment_intent["lines"]["data"] || []
-
-    case invoice_lines do
-      [line | _] ->
-        # Get the subscription period end time
-        period_end = line["period"]["end"]
-        if period_end do
-          end_time = DateTime.from_unix(period_end)
-          {:ok, end_time}
-        else
-          {:error, :no_period_end}
+    # Try to get period_end directly from invoice first
+    case payment_intent["period_end"] do
+      nil ->
+        # Fallback: extract from invoice lines
+        invoice_lines = payment_intent["lines"]["data"] || []
+        case invoice_lines do
+          [line | _] ->
+            period_end = line["period"]["end"]
+            if period_end do
+              end_time = DateTime.from_unix(period_end)
+              {:ok, end_time}
+            else
+              {:error, :no_period_end}
+            end
+          [] ->
+            {:error, :no_invoice_lines}
         end
-      [] ->
-        {:error, :no_invoice_lines}
+      period_end ->
+        end_time = DateTime.from_unix(period_end)
+        {:ok, end_time}
     end
   end
 
