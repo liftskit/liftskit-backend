@@ -44,6 +44,13 @@ defmodule LiftskitBackendWeb.Router do
     post "/email/signup", EmailController, :send_signup_email
   end
 
+  # Stripe webhooks (no auth required)
+  scope "/api", LiftskitBackendWeb do
+    pipe_through :api
+
+    post "/stripe/webhook", StripeController, :webhook
+  end
+
   # Other scopes may use custom stacks.
   scope "/api", LiftskitBackendWeb do
     pipe_through :api
@@ -54,9 +61,6 @@ defmodule LiftskitBackendWeb.Router do
 
   scope "/api", LiftskitBackendWeb do
     pipe_through [:api_auth]
-
-    # --- Stripe API ---
-    post "/stripe/webhook", StripeController, :webhook
 
     # --- Messages API ---
 
