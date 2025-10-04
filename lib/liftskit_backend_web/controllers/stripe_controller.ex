@@ -24,7 +24,6 @@ defmodule LiftskitBackendWeb.StripeController do
          {:ok, user} <- find_user_from_email(payment_intent["customer_email"]),
          {:ok, subscription_end_time} <- calculate_subscription_end_time(payment_intent),
          {:ok, _updated_user} <- renew_user_membership(user, subscription_end_time, payment_intent) do
-      Logger.info("Membership successfully renewed for user #{user.id}")
       conn
       |> put_status(:ok)
       |> json(%{message: "Membership successfully renewed"})
@@ -92,43 +91,24 @@ defmodule LiftskitBackendWeb.StripeController do
   defp calculate_subscription_end_time(payment_intent) do
     require Logger
 
-    # Try to get period_end directly from invoice first
-    case payment_intent["period_end"] do
-      nil ->
-        Logger.info("No period_end on invoice, checking invoice lines")
-        # Fallback: extract from invoice lines
-        invoice_lines = payment_intent["lines"]["data"] || []
-        case invoice_lines do
-          [line | _] ->
-            period_end = line["period"]["end"]
-            Logger.info("Found period_end in line: #{period_end}")
-            if period_end do
-              case DateTime.from_unix(period_end) do
-                {:ok, end_time} ->
-                  Logger.info("Converted to DateTime: #{inspect(end_time)}")
-                  {:ok, end_time}
-                {:error, reason} ->
-                  Logger.error("Failed to convert Unix timestamp #{period_end}: #{inspect(reason)}")
-                  {:error, {:invalid_unix_timestamp, period_end}}
-              end
-            else
-              {:error, :no_period_end}
-            end
-          [] ->
-            {:error, :no_invoice_lines}
-        end
-      period_end when is_integer(period_end) ->
-        Logger.info("Found period_end on invoice: #{period_end}")
-        case DateTime.from_unix(period_end) do
+    # Try invoice period_end first, then fallback to invoice lines
+    period_end = payment_intent["period_end"] ||
+                 get_in(payment_intent, ["lines", "data", Access.at(0), "period", "end"])
+
+    case period_end do
+      nil -> {:error, :no_period_end}
+
+      timestamp when is_integer(timestamp) ->
+        case DateTime.from_unix(timestamp) do
           {:ok, end_time} ->
-            Logger.info("Converted to DateTime: #{inspect(end_time)}")
             {:ok, end_time}
           {:error, reason} ->
-            Logger.error("Failed to convert Unix timestamp #{period_end}: #{inspect(reason)}")
-            {:error, {:invalid_unix_timestamp, period_end}}
+            Logger.error("Failed to convert Unix timestamp #{timestamp}: #{inspect(reason)}")
+            {:error, {:invalid_unix_timestamp, timestamp}}
         end
-      _ ->
-        Logger.error("Invalid period_end value: #{inspect(payment_intent["period_end"])}")
+
+      invalid ->
+        Logger.error("Invalid period_end value: #{inspect(invalid)}")
         {:error, :invalid_period_end}
     end
   end
@@ -138,18 +118,12 @@ defmodule LiftskitBackendWeb.StripeController do
 
     subscription_id = payment_intent["subscription"]
     Logger.info("Renewing membership for user #{user.id}")
-    Logger.info("Expires at: #{inspect(subscription_end_time)}")
-    Logger.info("Subscription ID: #{inspect(subscription_id)}")
 
-    membership_attrs = %{
+    case LiftskitBackend.Users.update_membership(user, %{
       membership_status: "active",
       membership_expires_at: subscription_end_time,
       stripe_subscription_id: subscription_id
-    }
-
-    Logger.info("Membership attrs: #{inspect(membership_attrs)}")
-
-    case LiftskitBackend.Users.update_membership(user, membership_attrs) do
+    }) do
       {:ok, updated_user} ->
         Logger.info("Successfully updated user membership")
         {:ok, updated_user}
