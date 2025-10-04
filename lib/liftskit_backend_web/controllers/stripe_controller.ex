@@ -90,17 +90,27 @@ defmodule LiftskitBackendWeb.StripeController do
 
 
   defp calculate_subscription_end_time(payment_intent) do
+    require Logger
+
     # Try to get period_end directly from invoice first
     case payment_intent["period_end"] do
       nil ->
+        Logger.info("No period_end on invoice, checking invoice lines")
         # Fallback: extract from invoice lines
         invoice_lines = payment_intent["lines"]["data"] || []
         case invoice_lines do
           [line | _] ->
             period_end = line["period"]["end"]
+            Logger.info("Found period_end in line: #{period_end}")
             if period_end do
-              end_time = DateTime.from_unix(period_end)
-              {:ok, end_time}
+              case DateTime.from_unix(period_end) do
+                {:ok, end_time, _} ->
+                  Logger.info("Converted to DateTime: #{inspect(end_time)}")
+                  {:ok, end_time}
+                {:error, reason} ->
+                  Logger.error("Failed to convert Unix timestamp #{period_end}: #{inspect(reason)}")
+                  {:error, {:invalid_unix_timestamp, period_end}}
+              end
             else
               {:error, :no_period_end}
             end
@@ -108,13 +118,25 @@ defmodule LiftskitBackendWeb.StripeController do
             {:error, :no_invoice_lines}
         end
       period_end ->
-        end_time = DateTime.from_unix(period_end)
-        {:ok, end_time}
+        Logger.info("Found period_end on invoice: #{period_end}")
+        case DateTime.from_unix(period_end) do
+          {:ok, end_time, _} ->
+            Logger.info("Converted to DateTime: #{inspect(end_time)}")
+            {:ok, end_time}
+          {:error, reason} ->
+            Logger.error("Failed to convert Unix timestamp #{period_end}: #{inspect(reason)}")
+            {:error, {:invalid_unix_timestamp, period_end}}
+        end
     end
   end
 
   defp renew_user_membership(user, expires_at, payment_intent) do
+    require Logger
+
     subscription_id = payment_intent["subscription"]
+    Logger.info("Renewing membership for user #{user.id}")
+    Logger.info("Expires at: #{inspect(expires_at)}")
+    Logger.info("Subscription ID: #{inspect(subscription_id)}")
 
     membership_attrs = %{
       membership_status: "active",
@@ -122,6 +144,15 @@ defmodule LiftskitBackendWeb.StripeController do
       stripe_subscription_id: subscription_id
     }
 
-    LiftskitBackend.Users.update_membership(user, membership_attrs)
+    Logger.info("Membership attrs: #{inspect(membership_attrs)}")
+
+    case LiftskitBackend.Users.update_membership(user, membership_attrs) do
+      {:ok, updated_user} ->
+        Logger.info("Successfully updated user membership")
+        {:ok, updated_user}
+      {:error, changeset} ->
+        Logger.error("Failed to update user membership: #{inspect(changeset.errors)}")
+        {:error, changeset}
+    end
   end
 end
