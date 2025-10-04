@@ -104,7 +104,7 @@ defmodule LiftskitBackendWeb.StripeController do
             Logger.info("Found period_end in line: #{period_end}")
             if period_end do
               case DateTime.from_unix(period_end) do
-                {:ok, end_time, _} ->
+                {:ok, end_time} ->
                   Logger.info("Converted to DateTime: #{inspect(end_time)}")
                   {:ok, end_time}
                 {:error, reason} ->
@@ -120,7 +120,7 @@ defmodule LiftskitBackendWeb.StripeController do
       period_end when is_integer(period_end) ->
         Logger.info("Found period_end on invoice: #{period_end}")
         case DateTime.from_unix(period_end) do
-          {:ok, end_time, _} ->
+          {:ok, end_time} ->
             Logger.info("Converted to DateTime: #{inspect(end_time)}")
             {:ok, end_time}
           {:error, reason} ->
