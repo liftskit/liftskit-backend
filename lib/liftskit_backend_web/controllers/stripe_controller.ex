@@ -17,8 +17,7 @@ defmodule LiftskitBackendWeb.StripeController do
 
   def webhook(conn, %{"type" => "invoice.paid"} = params) do
     require Logger
-    Logger.info("Received invoice.paid webhook")
-    Logger.info("Webhook params: #{inspect(params, limit: 100)}")
+    Logger.info("Received invoice.paid webhook - renew user membership")
 
     with {:ok, payment_intent} <- parse_webhook_params(params),
          {:ok, user} <- find_user_from_email(payment_intent["customer_email"]),
