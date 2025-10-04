@@ -45,6 +45,13 @@ defmodule LiftskitBackend.Users do
     Repo.get_by(User, email: email)
 
   @doc """
+  Gets a user by Stripe customer ID.
+  """
+  def get_user_by_stripe_customer_id(customer_id) do
+    Repo.get_by(User, stripe_customer_id: customer_id)
+  end
+
+  @doc """
   Searches for users by username with fuzzy matching.
 
   ## Examples
@@ -101,6 +108,42 @@ defmodule LiftskitBackend.Users do
       |> User.registration_changeset(attrs)
       |> Repo.update()
     end
+  end
+
+  @doc """
+  Updates a user's membership.
+
+  ## Examples
+
+      iex> update_membership(user, %{membership_status: "active", membership_expires_at: datetime})
+      {:ok, %User{}}
+
+      iex> update_membership(user, %{membership_status: "invalid"})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_membership(%User{} = user, attrs) do
+    user
+    |> User.membership_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Updates a user's Stripe information.
+
+  ## Examples
+
+      iex> update_stripe_info(user, %{stripe_customer_id: "cus_123"})
+      {:ok, %User{}}
+
+      iex> update_stripe_info(user, %{stripe_subscription_id: "sub_456"})
+      {:ok, %User{}}
+
+  """
+  def update_stripe_info(%User{} = user, attrs) do
+    user
+    |> User.stripe_changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """

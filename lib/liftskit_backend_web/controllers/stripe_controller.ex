@@ -1,7 +1,47 @@
 defmodule LiftskitBackendWeb.StripeController do
+  @moduledoc """
+  Stripe webhook handler for processing payment events.
+
+  This controller handles Stripe webhooks, specifically:
+  - invoice.payment_succeeded: Automatically renews user membership when monthly payments succeed
+  - Other webhook types: Acknowledges receipt but doesn't process
+
+  Usage:
+    POST /api/stripe/webhook
+    Headers: Content-Type: application/json
+    Body: Stripe webhook JSON payload
+  """
   use LiftskitBackendWeb, :controller
 
   action_fallback LiftskitBackendWeb.FallbackController
+
+  def webhook(conn, %{"type" => "invoice.payment_succeeded"} = params) do
+    with {:ok, payment_intent} <- parse_webhook_params(params),
+         {:ok, user} <- find_user_from_customer_id(payment_intent["customer"]),
+         {:ok, subscription_end_time} <- calculate_subscription_end_time(payment_intent),
+         {:ok, _updated_user} <- renew_user_membership(user, subscription_end_time, payment_intent) do
+      conn
+      |> put_status(:ok)
+      |> json(%{message: "Membership successfully renewed"})
+    else
+      {:error, :user_not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "User not found for customer ID"})
+
+      {:error, reason} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Failed to process webhook: #{inspect(reason)}"})
+    end
+  end
+
+  def webhook(conn, _params) do
+    # Handle other webhook types or unknown events
+    conn
+    |> put_status(:ok)
+    |> json(%{message: "Webhook received but not processed"})
+  end
 
   def membership_created(conn, params) do
     IO.inspect(params)
@@ -9,7 +49,8 @@ defmodule LiftskitBackendWeb.StripeController do
     user = LiftskitBackend.Users.get_user_by_email(params["email"])
     if user do
       one_month_in_seconds = 30 * 24 * 60 * 60
-      expires_at = DateTime.from_unix(DateTime.utc_now().unix + one_month_in_seconds)
+      current_unix = DateTime.utc_now() |> DateTime.to_unix()
+      expires_at = DateTime.from_unix(current_unix + one_month_in_seconds)
       LiftskitBackend.Users.update_user(user, %{membership_status: "active", membership_expires_at: expires_at})
     end
 
@@ -18,5 +59,50 @@ defmodule LiftskitBackendWeb.StripeController do
     |> json(%{message: "Membership created"})
   end
 
+  # Private helper functions
 
+  defp parse_webhook_params(params) do
+    case params["data"]["object"] do
+      nil -> {:error, :invalid_webhook_format}
+      payment_intent -> {:ok, payment_intent}
+    end
+  end
+
+  defp find_user_from_customer_id(customer_id) do
+    case LiftskitBackend.Users.get_user_by_stripe_customer_id(customer_id) do
+      nil -> {:error, :user_not_found}
+      user -> {:ok, user}
+    end
+  end
+
+  defp calculate_subscription_end_time(payment_intent) do
+    # Extract subscription period end from invoice lines
+    invoice_lines = payment_intent["lines"]["data"] || []
+
+    case invoice_lines do
+      [line | _] ->
+        # Get the subscription period end time
+        period_end = line["period"]["end"]
+        if period_end do
+          end_time = DateTime.from_unix(period_end)
+          {:ok, end_time}
+        else
+          {:error, :no_period_end}
+        end
+      [] ->
+        {:error, :no_invoice_lines}
+    end
+  end
+
+  defp renew_user_membership(user, expires_at, payment_intent) do
+    subscription_id = payment_intent["subscription"]
+
+    membership_attrs = %{
+      membership_status: "active",
+      membership_expires_at: expires_at,
+      stripe_subscription_id: subscription_id
+    }
+
+    LiftskitBackend.Users.update_membership(user, membership_attrs)
+  end
 end

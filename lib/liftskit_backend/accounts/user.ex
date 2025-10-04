@@ -11,6 +11,14 @@ defmodule LiftskitBackend.Accounts.User do
     field :authenticated_at, :utc_datetime, virtual: true
     field :dark_mode, :boolean, default: false
 
+    # Membership fields
+    field :membership_status, :string
+    field :membership_expires_at, :utc_datetime
+
+    # Stripe fields
+    field :stripe_customer_id, :string
+    field :stripe_subscription_id, :string
+
     timestamps(type: :utc_datetime)
   end
 
@@ -33,6 +41,16 @@ defmodule LiftskitBackend.Accounts.User do
     |> cast(attrs, [:dark_mode])
   end
 
+  def membership_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:membership_status, :membership_expires_at, :stripe_customer_id, :stripe_subscription_id])
+    |> validate_membership_status()
+  end
+
+  def stripe_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:stripe_customer_id, :stripe_subscription_id])
+  end
 
   defp validate_username(changeset, _opts) do
     changeset = changeset
@@ -110,5 +128,10 @@ defmodule LiftskitBackend.Accounts.User do
   def confirm_changeset(user) do
     now = DateTime.utc_now(:second)
     change(user, confirmed_at: now)
+  end
+
+  defp validate_membership_status(changeset) do
+    changeset
+    |> validate_inclusion(:membership_status, ["active", "inactive", "expired"])
   end
 end
