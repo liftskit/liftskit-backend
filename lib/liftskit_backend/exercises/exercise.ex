@@ -6,7 +6,7 @@ defmodule LiftskitBackend.Exercises.Exercise do
 
   schema "exercises" do
     field :name, :string
-    field :_type, Ecto.Enum, values: [:Strength, :Bodyweight, :Cardio]
+    field :_type, Ecto.Enum, values: [:Strength, :Bodyweight, :Cardio, :Weightlifting]
 
     field :orm_percent, :decimal
     field :reps, :integer
@@ -43,7 +43,7 @@ defmodule LiftskitBackend.Exercises.Exercise do
     exercise
     |> cast(attrs, [:name, :_type, :orm_percent, :reps, :sets, :time, :weight, :is_superset, :superset_group, :superset_order])
     |> validate_required([:name, :_type, :orm_percent, :reps, :sets, :time, :weight, :is_superset])
-    |> validate_inclusion(:_type, [:Strength, :Bodyweight, :Cardio])
+    |> validate_inclusion(:_type, [:Strength, :Bodyweight, :Cardio, :Weightlifting])
     |> validate_superset_group()
     |> foreign_key_constraint(:workout_id)
     |> normalize_numeric_fields()

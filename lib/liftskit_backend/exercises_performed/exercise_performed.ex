@@ -3,7 +3,7 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
   import Ecto.Changeset
 
   schema "exercise_performed" do
-    field :_type, Ecto.Enum, values: [:Strength, :Bodyweight, :Cardio]
+    field :_type, Ecto.Enum, values: [:Strength, :Bodyweight, :Cardio, :Weightlifting]
     field :name, :string
     field :reps, :integer
     field :sets, :integer
@@ -24,7 +24,7 @@ defmodule LiftskitBackend.ExercisesPerformed.ExercisePerformed do
     exercise_performed
     |> cast(attrs, [:_type, :name, :reps, :sets, :time, :weight, :workout_performed_id, :is_superset, :superset_group, :superset_order])
     |> validate_required([:_type, :name])
-    |> validate_inclusion(:_type, [:Strength, :Bodyweight, :Cardio])
+    |> validate_inclusion(:_type, [:Strength, :Bodyweight, :Cardio, :Weightlifting])
     |> validate_type_specific_requirements()
     |> validate_superset_group()
     |> foreign_key_constraint(:workout_performed_id)
