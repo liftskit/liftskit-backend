@@ -59,6 +59,7 @@ defmodule LiftskitBackendWeb.Endpoint do
   plug CORSPlug,
     origin: [
       "http://localhost:8081",
+      "http://localhost:8083",
       "http://localhost:3000",
       "http://192.168.1.215:8081",
       "http://192.168.1.215:4000",

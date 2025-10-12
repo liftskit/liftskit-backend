@@ -122,7 +122,7 @@ defmodule LiftskitBackendWeb.MessageController do
   end
 
   defp broadcast_to_receiver(message) do
-    LiftskitChatWeb.Endpoint.broadcast(
+    LiftskitBackendWeb.Endpoint.broadcast(
       "user_messages:#{message.to_user.username}",
       "message:received",
       %{
@@ -138,7 +138,7 @@ defmodule LiftskitBackendWeb.MessageController do
   end
 
   defp broadcast_to_sender(message) do
-    LiftskitChatWeb.Endpoint.broadcast(
+    LiftskitBackendWeb.Endpoint.broadcast(
       "user_messages:#{message.from_user.username}",
       "message:received",
       %{

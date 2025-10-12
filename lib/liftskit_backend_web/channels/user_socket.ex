@@ -8,7 +8,7 @@ defmodule LiftskitBackendWeb.UserSocket do
 
   ## Channels
 
-  channel "user_messages:*", LiftskitBackendWeb.MessageChannel
+  channel "user_messages:*", LiftskitBackendWeb.MessagesChannel
   channel "lobby:*", LiftskitBackendWeb.LobbyChannel
   channel "room:*", LiftskitBackendWeb.RoomChannel
 
