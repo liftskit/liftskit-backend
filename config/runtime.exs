@@ -94,7 +94,11 @@ if config_env() == :prod do
     check_origin: [
       "https://#{host}",
       "https://healthcheck.railway.app",
-      "https://liftskit-backend-production.up.railway.app"
+      "https://liftskit-backend-production.up.railway.app",
+      # Allow mobile app connections from any origin in production
+      # You can be more specific if you know your mobile app's exact origins
+      "https://*",
+      "http://*"
     ]
 
   # ## AWS SES Mailer Configuration (SMTP)
