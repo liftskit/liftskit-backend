@@ -95,10 +95,13 @@ if config_env() == :prod do
       "https://#{host}",
       "https://healthcheck.railway.app",
       "https://liftskit-backend-production.up.railway.app",
-      # Allow mobile app connections from any origin in production
-      # You can be more specific if you know your mobile app's exact origins
-      "https://*",
-      "http://*"
+      # Allow localhost connections for development
+      "http://localhost:8081",
+      "http://localhost:8083",
+      "http://localhost:3000",
+      "http://127.0.0.1:8081",
+      "http://127.0.0.1:8083",
+      "http://127.0.0.1:3000"
     ]
 
   # ## AWS SES Mailer Configuration (SMTP)
