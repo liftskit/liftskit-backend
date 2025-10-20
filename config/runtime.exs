@@ -90,19 +90,8 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base,
-    # Allow Railway healthcheck hostname and production domain
-    check_origin: [
-      "https://#{host}",
-      "https://healthcheck.railway.app",
-      "https://liftskit-backend-production.up.railway.app",
-      # Allow localhost connections for development
-      "http://localhost:8081",
-      "http://localhost:8083",
-      "http://localhost:3000",
-      "http://127.0.0.1:8081",
-      "http://127.0.0.1:8083",
-      "http://127.0.0.1:3000"
-    ]
+    # Disable origin checking to allow connections from any origin
+    check_origin: false
 
   # ## AWS SES Mailer Configuration (SMTP)
   #

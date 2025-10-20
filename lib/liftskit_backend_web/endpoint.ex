@@ -55,21 +55,11 @@ defmodule LiftskitBackendWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
 
-  # CORS configuration for React Native development
+  # CORS configuration - allowing any origin for now
   plug CORSPlug,
-    origin: [
-      "http://localhost:8081",
-      "http://localhost:8083",
-      "http://localhost:3000",
-      "http://192.168.1.215:8081",
-      "http://192.168.1.215:4000",
-      "http://Traviss-MBP.lan:8081",
-      "http://Traviss-MBP.lan:4000",
-      # Add your phone's IP address here (replace with actual IP)
-      # "http://192.168.1.XXX:8081"
-    ],
+    origin: "*",
     max_age: 86400,
-    credentials: true,
+    credentials: false,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     headers: ["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"]
 
